@@ -71,6 +71,14 @@
       "title_en": "New in v0.08.0",
       "body_en": "• Switching brands no longer keeps a model from the previous brand: each brand remembers its own model.\n• Mini Cooper R53 with its photo and a new Ford Bronco Sport photo.",
       "link": null
+    },
+    {
+      "id": "v0.09.0",
+      "title": "Novedades de la v0.09.0",
+      "body": "• Mini abre con el Cooper R53 y su foto.\n• Fotos nuevas del Mini Cooper R53, del BMW 535i y del Mercedes C350.\n• Toyota GR Yaris con su foto.",
+      "title_en": "New in v0.09.0",
+      "body_en": "• Mini opens with the Cooper R53 and its photo.\n• New photos for the Mini Cooper R53, the BMW 535i and the Mercedes C350.\n• Toyota GR Yaris with its photo.",
+      "link": null
     }
   ]
 }

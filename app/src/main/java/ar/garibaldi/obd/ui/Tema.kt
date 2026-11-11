@@ -91,10 +91,11 @@ object Marcas {
             modelos = listOf("UP!", "GOL", "GOL TREND", "FOX", "CROSSFOX", "SURAN", "VOYAGE", "POLO", "POLO GTS", "VIRTUS", "VENTO", "BORA", "JETTA", "GOLF", "GOLF GTI", "GOLF R", "PASSAT", "CC", "SCIROCCO", "BEETLE", "NIVUS", "T-CROSS", "TAOS", "TIGUAN", "TIGUAN ALLSPACE", "TOUAREG", "SHARAN", "SAVEIRO", "AMAROK"),
             fotos = mapOf("POLO GTS" to R.drawable.auto_polo_gts)), // celeste y azul VW
         Marca("Toyota", Color(0xFFEB0A1E), Color(0xFF4A0006), "COROLLA", logo = R.drawable.logo_toyota,
-            modelos = listOf("ETIOS", "YARIS", "YARIS CROSS", "COROLLA", "COROLLA CROSS", "CAMRY", "PRIUS", "C-HR", "RAV4", "SW4", "FORTUNER", "HILUX", "PRADO", "LAND CRUISER", "INNOVA", "86", "GR86", "GR YARIS", "SUPRA")), // rojo Toyota
+            modelos = listOf("ETIOS", "YARIS", "YARIS CROSS", "COROLLA", "COROLLA CROSS", "CAMRY", "PRIUS", "C-HR", "RAV4", "SW4", "FORTUNER", "HILUX", "PRADO", "LAND CRUISER", "INNOVA", "86", "GR86", "GR YARIS", "SUPRA"),
+            fotos = mapOf("GR YARIS" to R.drawable.auto_gr_yaris)), // rojo Toyota
         Marca("BMW", Color(0xFF3FA9F5), Color(0xFF0A3E73), "535I", logo = R.drawable.logo_bmw, foto = R.drawable.auto_535i,
             modelos = listOf("116I", "118I", "120I", "125I", "130I", "135I", "M135I", "218I", "220I", "228I", "230I", "316I", "318I", "320I", "323I", "325I", "328I", "330I", "335I", "340I", "420I", "428I", "430I", "435I", "440I", "520I", "523I", "525I", "528I", "530I", "535I", "540I", "545I", "550I", "630I", "640I", "650I", "730I", "740I", "750I", "X1", "X2", "X3", "X4", "X5", "X6", "X7", "Z3", "Z4", "M2", "M3", "M4", "M5", "M6", "I3")), // celeste del logo BMW
-        Marca("Mini", Color(0xFFA7A9AC), Color(0xFF2E3033), "COOPER", logo = R.drawable.logo_mini,
+        Marca("Mini", Color(0xFFA7A9AC), Color(0xFF2E3033), "COOPER R53", logo = R.drawable.logo_mini,
             modelos = listOf("ONE", "COOPER", "COOPER S", "COOPER R53", "COOPER SE", "JCW", "CLUBMAN", "COUNTRYMAN", "PACEMAN", "COUPE", "ROADSTER", "CABRIO"),
             fotos = mapOf("COOPER R53" to R.drawable.auto_mini_r53)), // gris plata Mini
         Marca("Chevrolet", Color(0xFFD1A23A), Color(0xFF4A3300), "CRUZE", logo = R.drawable.logo_chevrolet,
