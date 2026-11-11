@@ -1,6 +1,7 @@
 package ar.garibaldi.obd.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,8 +44,19 @@ import androidx.compose.ui.unit.sp
 import ar.garibaldi.obd.R
 import ar.garibaldi.obd.dtc.Gravedad
 
-/** Colores de acento de una marca: [claro] es el principal y [oscuro] el final del degradé. */
-class Marca(val nombre: String, val claro: Color, val oscuro: Color) {
+/**
+ * Una marca: [claro] es el color principal y [oscuro] el final del degradé. [modelo] es el texto
+ * gigante de la portada por defecto; [logo] y [foto] son opcionales (sin logo va el nombre en letras,
+ * sin foto queda solo el modelo).
+ */
+class Marca(
+    val nombre: String,
+    val claro: Color,
+    val oscuro: Color,
+    val modelo: String,
+    val logo: Int? = null,
+    val foto: Int? = null,
+) {
     /** Degradé horizontal de los botones principales. */
     val degrade: Brush get() = Brush.horizontalGradient(listOf(claro, oscuro))
 
@@ -54,13 +66,17 @@ class Marca(val nombre: String, val claro: Color, val oscuro: Color) {
 
 object Marcas {
     val lista = listOf(
-        Marca("Mercedes-Benz", Color(0xFF00B1A9), Color(0xFF00302E)),
-        Marca("BMW", Color(0xFF2E8BFF), Color(0xFF0A3A8C)),
-        Marca("Audi", Color(0xFFF50537), Color(0xFF8A0320)),
-        Marca("Volkswagen", Color(0xFF00B0F0), Color(0xFF00437A)),
-        Marca("McLaren", Color(0xFFFF9A1F), Color(0xFFE85D04)),
-        Marca("Ferrari", Color(0xFFFF2800), Color(0xFF8F1500)),
-        Marca("Porsche", Color(0xFFD5A021), Color(0xFF7A5A0C)),
+        Marca(
+            "Mercedes-Benz", Color(0xFF00B1A9), Color(0xFF00302E), "C350",
+            logo = R.drawable.logo_mercedes, foto = R.drawable.auto_c350,
+        ),
+        // Colores de cada marca: el claro es el de su identidad, el oscuro la versión profunda del mismo tono
+        Marca("Ford", Color(0xFF1C5DD6), Color(0xFF00095B), "FOCUS", logo = R.drawable.logo_ford), // azul Ford del óvalo
+        Marca("Volkswagen", Color(0xFF00B0F0), Color(0xFF001E50), "GOLF", logo = R.drawable.logo_vw), // celeste y azul VW
+        Marca("Toyota", Color(0xFFEB0A1E), Color(0xFF4A0006), "COROLLA", logo = R.drawable.logo_toyota), // rojo Toyota
+        Marca("BMW", Color(0xFF3FA9F5), Color(0xFF0A3E73), "320I", logo = R.drawable.logo_bmw), // celeste del logo BMW
+        Marca("Mini", Color(0xFFA7A9AC), Color(0xFF2E3033), "COOPER", logo = R.drawable.logo_mini), // gris plata Mini
+        Marca("Chevrolet", Color(0xFFD1A23A), Color(0xFF4A3300), "CRUZE", logo = R.drawable.logo_chevrolet), // dorado del moño Chevrolet
     )
 
     fun porNombre(nombre: String?): Marca = lista.firstOrNull { it.nombre == nombre } ?: lista.first()
@@ -192,7 +208,7 @@ fun BotonAcento(
     }
 }
 
-/** Botón secundario: gris oscuro. */
+/** Botón secundario: negro con borde en el degradé de la marca. */
 @Composable
 fun BotonOscuro(
     texto: String,
@@ -201,11 +217,13 @@ fun BotonOscuro(
     colorTexto: Color = Tinta.Texto,
     alHacerClic: () -> Unit,
 ) {
+    val marca = LocalMarca.current
     Box(
         modifier
             .heightIn(min = 52.dp)
             .clip(FormaBoton)
-            .background(Tinta.TarjetaAlta)
+            .background(Tinta.Fondo)
+            .border(1.5.dp, marca.degrade, FormaBoton)
             .alpha(if (habilitado) 1f else 0.4f)
             .clickable(enabled = habilitado, onClick = alHacerClic)
             .padding(horizontal = 18.dp, vertical = 14.dp),

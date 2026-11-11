@@ -6,3 +6,6 @@ local.properties
 .kotlin/
 captures/
 dist/
+
+# PDFs que baja tools/mercedes_dtc.py
+tools/_mercedes_pdf/

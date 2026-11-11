@@ -15,6 +15,14 @@
       "title_en": "New in v0.01.0",
       "body_en": "• First published version.\n• Automatic updates and news messages.\n• Spanish and English interface (ES/EN switch at the top of every screen).\n• Home screen with the C350 photo and the model name edge to edge.",
       "link": null
+    },
+    {
+      "id": "v0.02.0",
+      "title": "Novedades de la v0.02.0",
+      "body": "• Ahora sirve para Ford, Volkswagen, Toyota, BMW, Mini y Chevrolet (Ajustes → Apariencia), con su logo y sus colores. En esas marcas lee motor y emisiones.\n• Códigos propios de Mercedes: 1.494 descripciones de 14 módulos (motor, caja 7G, ESP, airbag, SAM, tablero, clima y más), sacadas de listas de diagnóstico de Mercedes.\n• Logo de la marca más grande, debajo de la barra.\n• La pantalla de inicio queda apoyada abajo, con \"Conectar al adaptador\" al final.\n• Botones secundarios negros con borde en el degradé de la marca.\n• Foto nueva del C350.",
+      "title_en": "New in v0.02.0",
+      "body_en": "• Now works with Ford, Volkswagen, Toyota, BMW, Mini and Chevrolet (Settings → Appearance), with their logo and colors. With those brands it reads engine and emissions.\n• Mercedes-specific codes: 1,494 descriptions from 14 modules (engine, 7G gearbox, ESP, airbag, SAM, instrument cluster, climate control and more), taken from Mercedes diagnostic lists.\n• Bigger brand logo, below the top bar.\n• The home screen sits at the bottom, with \"Connect to adapter\" last.\n• Secondary buttons are black with a border in the brand gradient.\n• New C350 photo.",
+      "link": null
     }
   ]
 }

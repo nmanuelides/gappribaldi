@@ -13,6 +13,7 @@ import androidx.compose.foundation.background
 import ar.garibaldi.obd.i18n.Idioma
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -43,6 +44,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import java.io.File
@@ -130,23 +132,42 @@ private fun BarraSuperior(vm: AppViewModel, pantalla: Pantalla) {
         Box(Modifier.width(100.dp)) {
             if (pantalla != Pantalla.Inicio) BotonIcono(Icons.AutoMirrored.Filled.ArrowBack, "Volver") { vm.volver() }
         }
-        if (pantalla == Pantalla.Inicio && vm.marca.nombre == "Mercedes-Benz") {
-            Image(
-                painterResource(R.drawable.logo_mercedes), "Mercedes-Benz",
-                modifier = Modifier.weight(1f).height(30.dp), contentScale = ContentScale.Fit,
-            )
-        } else {
-            Text(
-                titulo,
-                style = if (pantalla == Pantalla.Inicio) MaterialTheme.typography.titleLarge else MaterialTheme.typography.headlineSmall,
-                color = Tinta.Texto,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.weight(1f),
-            )
-        }
+        // En el inicio la marca va abajo de la barra, grande, como título
+        Text(
+            if (pantalla == Pantalla.Inicio) "" else titulo,
+            style = MaterialTheme.typography.headlineSmall,
+            color = Tinta.Texto,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.weight(1f),
+        )
         Row(Modifier.width(100.dp), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
             SelectorIdioma(vm)
             if (pantalla != Pantalla.Ajustes) BotonIcono(Icons.Filled.Settings, "Ajustes") { vm.ir(Pantalla.Ajustes) }
+        }
+    }
+    if (pantalla == Pantalla.Inicio) TituloMarca(vm)
+}
+
+/** Título de la portada: el logo de la marca (o su nombre) grande, abajo de la barra. */
+@Composable
+private fun TituloMarca(vm: AppViewModel) {
+    Box(Modifier.fillMaxWidth().padding(top = 4.dp, bottom = 8.dp), contentAlignment = Alignment.Center) {
+        val logo = vm.marca.logo
+        if (logo != null) {
+            val dibujo = painterResource(logo)
+            val proporcion = dibujo.intrinsicSize.let { if (it.height > 0f) it.width / it.height else 4f }
+            // Los emblemas redondos o cuadrados (VW, BMW) necesitan más alto que los logos apaisados
+            val alto = when {
+                proporcion < 1.6f -> 64.dp
+                proporcion > 5f -> 40.dp
+                else -> 46.dp
+            }
+            Image(
+                dibujo, vm.marca.nombre,
+                modifier = Modifier.height(alto).aspectRatio(proporcion), contentScale = ContentScale.Fit,
+            )
+        } else {
+            Text(vm.marca.nombre, style = MaterialTheme.typography.headlineMedium.copy(fontSize = 44.sp), color = Tinta.Texto)
         }
     }
 }

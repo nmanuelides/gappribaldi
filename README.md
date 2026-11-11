@@ -18,7 +18,10 @@ Toda la interfaz está en español rioplatense y pensada para alguien que no es 
 - **Registro crudo** de todo lo enviado y recibido (TX/RX con hora), compartible con un toque.
 - **Modo demo**: un auto simulado para probar toda la app sin estar en el garaje.
 - **"Explicame este error"** (opcional): consulta a Claude con tu propia API key.
-- **Apariencia por marca**: el color de acento y los degradés cambian según la marca elegida en Ajustes (Mercedes-Benz: `#00B1A9` → `#00645F`). En la portada, el nombre del modelo va en letras gigantes por detrás de la foto del auto.
+- **Marcas**: Mercedes-Benz, Ford, Volkswagen, Toyota, BMW, Mini y Chevrolet, con sus colores y logo. El C350 es el auto
+  de referencia: tiene mapa de módulos, notas de motor, códigos propios de Mercedes y foto. Con las otras marcas se lee
+  lo que es común a todos los autos (OBD-II: motor y emisiones) y la búsqueda completa de módulos; sus códigos propios
+  se muestran sin descripción. Sin foto de la marca, la portada muestra solo el modelo en letras gigantes.
 
 ## De dónde salen las descripciones
 
@@ -26,12 +29,14 @@ Toda la interfaz está en español rioplatense y pensada para alguien que no es 
 |---|---|
 | Fichas curadas (`tools/curados.py`) | 395 códigos en español, escritos para este auto, con notas del M272 y la 722.9 |
 | [OBDex](https://github.com/foerbsnavi/OBDex) (CC0, dominio público) | Los 9.533 códigos genéricos SAE J2012 con causas, síntomas y banderas (en inglés) |
+| Listas del DAS de Mercedes ([benzbits.com/dtc](http://benzbits.com/dtc/), `tools/mercedes_dtc.py`) | 1.494 códigos propios de 14 módulos (motor ME 9.7, caja 722.9, ESP, airbag, EZS, SAM, tablero, clima…), de autos de la misma época que el W204 (W203, CLK) |
 | ML Kit de Google, en el teléfono | Traduce al español los textos de OBDex (una descarga de ~30 MB, opcional) |
 | Claude (opcional) | Explicación orientativa de un código puntual, incluidos los propios de Mercedes |
 
-**Códigos propios de Mercedes** (los que no pertenecen a los rangos que define la norma): la app muestra el código
-crudo y el módulo, y **no inventa una descripción**. El significado exacto de esos códigos solo está en la
-documentación del fabricante; para eso están los botones "Buscar en la web" y "Explicame este error".
+**Códigos propios de Mercedes** (los que no pertenecen a los rangos que define la norma): la app los busca en las
+listas del DAS del módulo correspondiente y aclara de qué auto sale cada texto. Si el módulo no está identificado,
+muestra los significados posibles de cada lista. Si el código no figura, muestra el código crudo y **no inventa una
+descripción**; para eso están los botones "Buscar en la web" y "Explicame este error".
 
 ## Actualizaciones y novedades
 

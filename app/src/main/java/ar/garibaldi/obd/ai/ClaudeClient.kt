@@ -1,5 +1,6 @@
 package ar.garibaldi.obd.ai
 
+import ar.garibaldi.obd.auto.Auto
 import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
@@ -46,9 +47,20 @@ object ClaudeClient {
     const val MODELO = "claude-opus-5-5"
     private const val URL_API = "https://api.anthropic.com/v1/messages"
 
-    private val SISTEMA = """
-        Sos un mecánico argentino con mucha experiencia en Mercedes-Benz que le explica un código de falla
-        al dueño de un Mercedes-Benz C350 W204 modelo 2007 (motor V6 nafta M272, caja automática 7G-Tronic 722.9).
+    /** El auto, tal como se le describe a la IA. El C350 lleva sus datos completos; los demás, marca y modelo. */
+    private fun autoEs(): String =
+        if (Auto.esMercedes && Auto.modelo.equals("C350", true))
+            "un Mercedes-Benz C350 W204 modelo 2007 (motor V6 nafta M272, caja automática 7G-Tronic 722.9)"
+        else "un ${Auto.marca} ${Auto.modelo} (año y motor no informados; si importan para la respuesta, decilo)"
+
+    private fun autoEn(): String =
+        if (Auto.esMercedes && Auto.modelo.equals("C350", true))
+            "a 2007 Mercedes-Benz C350 W204 (M272 petrol V6, 7G-Tronic 722.9 automatic transmission)"
+        else "a ${Auto.marca} ${Auto.modelo} (year and engine not given; if they matter for the answer, say so)"
+
+    private fun sistema() = """
+        Sos un mecánico argentino con mucha experiencia en ${Auto.marca} que le explica un código de falla
+        al dueño de ${autoEs()}.
         El dueño no es mecánico. Escribí en español rioplatense, claro y sin tecnicismos innecesarios.
 
         Estructura de la respuesta, en texto plano sin markdown:
@@ -57,15 +69,15 @@ object ClaudeClient {
         3. ¿Puedo seguir manejando? (sí / con cuidado / no, y por qué).
         4. Qué revisar o pedirle al mecánico.
 
-        Reglas de honestidad: muchos códigos de Mercedes son propios de cada módulo y su significado exacto
+        Reglas de honestidad: muchos códigos de ${Auto.marcaCorta} son propios de cada módulo y su significado exacto
         solo está en la documentación del fabricante. Si no estás seguro de qué significa este código en este
         módulo, decilo con todas las letras y aclará qué parte es una estimación; nunca presentes una
         suposición como si fuera la descripción oficial. No inventes números de parte ni procedimientos.
     """.trimIndent()
 
-    private val SISTEMA_EN = """
-        You are an experienced Mercedes-Benz mechanic explaining a fault code to the owner of a 2007
-        Mercedes-Benz C350 W204 (M272 petrol V6, 7G-Tronic 722.9 automatic transmission).
+    private fun sistemaEn() = """
+        You are an experienced ${Auto.marca} mechanic explaining a fault code to the owner of
+        ${autoEn()}.
         The owner is not a mechanic. Write in plain, clear English without unnecessary jargon.
         The context below may be in Spanish; always answer in English.
 
@@ -75,7 +87,7 @@ object ClaudeClient {
         3. Can I keep driving? (yes / carefully / no, and why).
         4. What to check or ask the mechanic.
 
-        Honesty rules: many Mercedes codes are specific to each module and their exact meaning is only in
+        Honesty rules: many ${Auto.marcaCorta} codes are specific to each module and their exact meaning is only in
         the manufacturer's documentation. If you're not sure what this code means in this module, say so
         plainly and state which part is an estimate; never present a guess as the official description.
         Don't make up part numbers or procedures.
@@ -87,7 +99,7 @@ object ClaudeClient {
             val cuerpo = JSONObject()
                 .put("model", MODELO)
                 .put("max_tokens", 6000)
-                .put("system", if (ingles) SISTEMA_EN else SISTEMA)
+                .put("system", if (ingles) sistemaEn() else sistema())
                 .put(
                     "messages",
                     JSONArray().put(

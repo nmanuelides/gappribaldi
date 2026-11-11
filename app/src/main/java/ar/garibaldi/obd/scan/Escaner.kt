@@ -1,5 +1,6 @@
 package ar.garibaldi.obd.scan
 
+import ar.garibaldi.obd.auto.Auto
 import ar.garibaldi.obd.dtc.Dtc
 import ar.garibaldi.obd.dtc.DtcRepositorio
 import ar.garibaldi.obd.dtc.EstadoDtc
@@ -46,7 +47,7 @@ class ResultadoEscaneo(
     fun clavesDeCodigos(): Set<String> = modulos.flatMap { m -> m.dtcs.map { m.clave + "|" + it.codigo } }.toSet()
 }
 
-/** Lee todo: OBD estándar y cada módulo Mercedes conocido. Si uno no responde, sigue con el siguiente. */
+/** Lee todo: OBD estándar y cada módulo conocido del auto. Si uno no responde, sigue con el siguiente. */
 class Escaner(private val diag: Diagnostico, private val obd: Obd2) {
 
     suspend fun escanear(
@@ -172,7 +173,7 @@ object Informe {
     fun texto(r: ResultadoEscaneo, repo: DtcRepositorio, titulos: Map<String, String> = emptyMap()): String {
         val sb = StringBuilder()
         val fecha = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.US).format(Date(r.fecha))
-        sb.appendLine("Diagnóstico Mercedes-Benz C350 (W204) — $fecha")
+        sb.appendLine("Diagnóstico ${Auto.descripcion} — $fecha")
         r.vin?.let { sb.appendLine("Chasis (VIN): $it") }
         r.voltaje?.let { sb.appendLine("Batería: $it") }
         r.testigoMotor?.let { sb.appendLine("Testigo de motor: ${if (it) "ENCENDIDO" else "apagado"}") }
@@ -184,9 +185,9 @@ object Informe {
             if (m.error != null) sb.appendLine("  No se pudo leer: ${m.error}")
             if (m.dtcs.isEmpty() && m.error == null) sb.appendLine("  Sin códigos")
             for (d in m.dtcs) {
-                val info = repo.buscar(d, m.categoria)
+                val info = repo.buscar(d, m.categoria, m.nombre)
                 val titulo = when {
-                    info.fuente == FuenteInfo.NINGUNA -> "código propio de Mercedes, sin descripción local"
+                    info.fuente == FuenteInfo.NINGUNA -> "código propio de ${Auto.marcaCorta}, sin descripción local"
                     else -> titulos[d.claveGenerica] ?: info.titulo
                 }
                 sb.appendLine("  ${d.codigo} — $titulo")

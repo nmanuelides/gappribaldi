@@ -1,6 +1,8 @@
 package ar.garibaldi.obd
 
 import ar.garibaldi.obd.adapter.Elm327
+import ar.garibaldi.obd.auto.Auto
+import ar.garibaldi.obd.modules.CatalogoModulos
 import ar.garibaldi.obd.dtc.DtcDecoder
 import ar.garibaldi.obd.dtc.DtcRepositorio
 import ar.garibaldi.obd.dtc.FuenteInfo
@@ -306,5 +308,66 @@ class NovedadesTest {
         assertTrue(n.esParaLaVersionInstalada("v0.01.0", "0.02.0"))
         assertFalse(n.esParaLaVersionInstalada("v0.03.0", "0.02.0"))
         assertTrue(n.esParaLaVersionInstalada("2026-11-11-aviso", "0.01.0")) // los avisos siempre
+    }
+}
+
+class MarcasTest {
+    @Test
+    fun otraMarcaNoUsaElMapaDeMercedes() {
+        try {
+            Auto.marca = "Ford"; Auto.modelo = "FOCUS"
+            val rapidos = CatalogoModulos.candidatosRapidos()
+            assertTrue(0x7E0 in rapidos)
+            assertFalse(0x612 in rapidos) // esquema de Daimler, solo para el Mercedes
+            assertEquals("Motor (probable)", CatalogoModulos.nuevo(0x7E0, 0x7E8).nombre)
+            assertEquals("Ford FOCUS", Auto.descripcion)
+            assertEquals("Código propio de Ford", Auto.let { "Código propio de ${it.marcaCorta}" })
+        } finally {
+            Auto.marca = Auto.MERCEDES; Auto.modelo = "C350"
+        }
+        assertTrue(0x612 in CatalogoModulos.candidatosRapidos())
+        assertEquals("Mercedes-Benz C350 (W204)", Auto.descripcion)
+    }
+}
+
+class ListasMercedesTest {
+    private val repo = DtcRepositorio { nombre -> File("src/main/assets/dtc", nombre).takeIf { it.exists() }?.inputStream() }
+
+    private fun carroceria(hex: String) = DtcDecoder.kwp(hexABytes("58 01 $hex 20"), trenMotriz = false).single()
+
+    @Test
+    fun codigoDeEspConModuloConocido() {
+        val info = repo.buscar(carroceria("50 01"), Categoria.FRENOS, "Frenos / ESP")
+        assertEquals(FuenteInfo.MERCEDES, info.fuente)
+        assertEquals(1, info.mercedes.size)
+        assertTrue(info.titulo.contains("N47-5"))
+    }
+
+    @Test
+    fun moduloDesconocidoMuestraVariosSignificados() {
+        val info = repo.buscar(carroceria("90 01"), Categoria.DESCONOCIDO, "Módulo 6A2")
+        assertTrue(info.mercedes.size > 1) // 9001 existe en airbag, techo y otros
+        assertTrue(info.mercedes.any { it.modulo == "Airbag (SRS)" })
+    }
+
+    @Test
+    fun motorSumaElTextoDeMercedesALaFichaGenerica() {
+        val p0014 = DtcDecoder.kwp(hexABytes("58 01 00 14 20"), trenMotriz = true).single()
+        val info = repo.buscar(p0014, Categoria.MOTOR, "Motor (ME 9.7)")
+        assertTrue(info.fuente == FuenteInfo.CURADA || info.fuente == FuenteInfo.OBDEX)
+        assertTrue(info.mercedes.single().texto.contains("camshaft", ignoreCase = true))
+    }
+
+    @Test
+    fun otrasMarcasNoUsanLasListasDeMercedes() {
+        try {
+            Auto.marca = "Toyota"
+            val info = repo.buscar(carroceria("50 01"), Categoria.FRENOS, "Frenos / ABS / ESP")
+            assertEquals(FuenteInfo.NINGUNA, info.fuente)
+            assertTrue(info.mercedes.isEmpty())
+            assertEquals("Código propio de Toyota", info.titulo)
+        } finally {
+            Auto.marca = Auto.MERCEDES
+        }
     }
 }

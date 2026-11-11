@@ -1,5 +1,6 @@
 package ar.garibaldi.obd.modules
 
+import ar.garibaldi.obd.auto.Auto
 import ar.garibaldi.obd.log.FrameLog
 import ar.garibaldi.obd.protocol.DiagResultado
 import ar.garibaldi.obd.protocol.Diagnostico
@@ -42,9 +43,33 @@ data class Modulo(
  * sugerencia de nombre ("probable"); lo que manda es lo que el auto contesta.
  * Fuentes: pares OBD estándar ISO 15765-4 y el esquema de Daimler
  * pedido 0x602 + 16·n / respuesta 0x480 + 2·n documentado por proyectos abiertos.
+ *
+ * Para las otras marcas solo se sugieren motor y caja (pares OBD estándar, iguales en todos los autos);
+ * la búsqueda completa igual encuentra cualquier otro módulo que conteste en el CAN de diagnóstico.
  */
 object CatalogoModulos {
-    private val sugeridos = mapOf(
+    private val sugeridosGenericos = mapOf(
+        0x7E0 to ("Motor" to Categoria.MOTOR),
+        0x7E1 to ("Caja automática" to Categoria.CAJA),
+    )
+
+    private val opcionesGenericas = listOf(
+        "Motor" to Categoria.MOTOR,
+        "Caja automática" to Categoria.CAJA,
+        "Frenos / ABS / ESP" to Categoria.FRENOS,
+        "Airbag (SRS)" to Categoria.AIRBAG,
+        "Llave y arranque" to Categoria.ARRANQUE,
+        "Carrocería y luces" to Categoria.CARROCERIA,
+        "Tablero de instrumentos" to Categoria.TABLERO,
+        "Dirección asistida" to Categoria.OTRO,
+        "Climatizador" to Categoria.CONFORT,
+        "Radio / multimedia" to Categoria.CONFORT,
+        "Sensores de estacionamiento" to Categoria.CONFORT,
+        "Presión de neumáticos" to Categoria.FRENOS,
+        "Otro" to Categoria.OTRO,
+    )
+
+    private val sugeridosMercedes = mapOf(
         0x7E0 to ("Motor (ME 9.7)" to Categoria.MOTOR),
         0x7E1 to ("Caja automática (7G-Tronic)" to Categoria.CAJA),
         0x612 to ("Llave y arranque (EZS)" to Categoria.ARRANQUE),
@@ -52,7 +77,9 @@ object CatalogoModulos {
     )
 
     /** Opciones para que el usuario le ponga nombre a un módulo sin identificar. */
-    val opciones = listOf(
+    val opciones: List<Pair<String, Categoria>> get() = if (Auto.esMercedes) opcionesMercedes else opcionesGenericas
+
+    private val opcionesMercedes = listOf(
         "Motor (ME 9.7)" to Categoria.MOTOR,
         "Caja automática (7G-Tronic)" to Categoria.CAJA,
         "Frenos / ESP" to Categoria.FRENOS,
@@ -76,13 +103,14 @@ object CatalogoModulos {
     )
 
     fun nuevo(idPedido: Int, idRespuesta: Int): Modulo {
-        val s = sugeridos[idPedido]
+        val s = (if (Auto.esMercedes) sugeridosMercedes else sugeridosGenericos)[idPedido]
         return if (s != null) Modulo(idPedido, idRespuesta, s.first + " (probable)", s.second)
         else Modulo(idPedido, idRespuesta, "Módulo %03X".format(idPedido), Categoria.DESCONOCIDO)
     }
 
-    /** Candidatos del escaneo rápido: pares OBD estándar y el esquema de Daimler. */
-    fun candidatosRapidos(): List<Int> = (0x7E0..0x7E7).toList() + (0..0x1F).map { 0x602 + it * 0x10 }
+    /** Candidatos del escaneo rápido: pares OBD estándar y, en el Mercedes, el esquema de Daimler. */
+    fun candidatosRapidos(): List<Int> =
+        (0x7E0..0x7E7).toList() + if (Auto.esMercedes) (0..0x1F).map { 0x602 + it * 0x10 } else emptyList()
 
     /**
      * Escaneo completo. Se saltean los IDs funcionales (7DF, 441: le hablan a todos a la vez)
@@ -93,8 +121,8 @@ object CatalogoModulos {
 }
 
 /** Guarda en el teléfono el mapa de módulos descubierto, para no volver a buscar cada vez. */
-class AlmacenModulos(carpeta: File) {
-    private val archivo = File(carpeta, "modulos.json")
+class AlmacenModulos(carpeta: File, nombre: String = "modulos.json") {
+    private val archivo = File(carpeta, nombre)
 
     fun cargar(): List<Modulo> = try {
         val arr = JSONArray(archivo.readText())

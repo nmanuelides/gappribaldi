@@ -63,6 +63,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import ar.garibaldi.obd.R
+import ar.garibaldi.obd.auto.Auto
 import ar.garibaldi.obd.i18n.Idioma
 import ar.garibaldi.obd.dtc.FuenteInfo
 import ar.garibaldi.obd.dtc.Gravedad
@@ -109,6 +110,21 @@ fun Lista(contenido: @Composable ColumnScope.() -> Unit) {
         verticalArrangement = Arrangement.spacedBy(12.dp),
         content = contenido,
     )
+}
+
+/** Como [Lista], pero si el contenido entra en la pantalla queda apoyado contra el borde de abajo. */
+@Composable
+fun ListaAbajo(contenido: @Composable ColumnScope.() -> Unit) {
+    BoxWithConstraints(Modifier.fillMaxSize()) {
+        val alto = maxHeight
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+            Column(
+                Modifier.fillMaxWidth().heightIn(min = alto).padding(horizontal = 16.dp).padding(bottom = 24.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.Bottom),
+                content = contenido,
+            )
+        }
+    }
 }
 
 fun fechaCorta(ms: Long): String = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.US).format(Date(ms))
@@ -184,10 +200,11 @@ private fun Portada(vm: AppViewModel) {
             contentAlignment = Alignment.TopCenter,
         ) {
             val modImagen = Modifier.fillMaxWidth(0.94f)
+            val fotoMarca = marca.foto
             if (foto != null) {
                 Image(foto, "Foto del auto", modImagen, contentScale = ContentScale.FillWidth)
-            } else {
-                Image(painterResource(R.drawable.auto_c350), "Mercedes-Benz C350", modImagen, contentScale = ContentScale.FillWidth)
+            } else if (fotoMarca != null) {
+                Image(painterResource(fotoMarca), "${marca.nombre} ${vm.modelo}", modImagen, contentScale = ContentScale.FillWidth)
             }
         }
     }
@@ -209,7 +226,7 @@ fun PantallaInicio(vm: AppViewModel) {
         if (falta) pedirPermiso.launch(Manifest.permission.BLUETOOTH_CONNECT) else elegirAdaptador = true
     }
 
-    Lista {
+    ListaAbajo {
         BannerActualizacion(vm)
         Portada(vm)
         when (val c = vm.conexion) {
@@ -247,19 +264,23 @@ fun PantallaInicio(vm: AppViewModel) {
                         textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
                     )
                 }
-                BotonAcento("Conectar al adaptador  →", Modifier.fillMaxWidth()) { abrirAdaptadores() }
                 BotonOscuro("Probar sin el auto (modo demo)", Modifier.fillMaxWidth()) { vm.conectarDemo() }
             }
-        }
-        FilaBotones {
-            BotonOscuro("Historial", Modifier.weight(1f)) { vm.ir(Pantalla.HistorialLista) }
-            BotonOscuro("Registro", Modifier.weight(1f)) { vm.ir(Pantalla.Registro) }
         }
         vm.resultado?.let { r ->
             Tarjeta(alHacerClic = { vm.ir(Pantalla.Resultado) }) {
                 Text("Último escaneo", style = MaterialTheme.typography.titleMedium)
                 Suave("${fechaCorta(r.fecha)} · ${r.totalCodigos} códigos en ${r.modulos.size} módulos")
             }
+        }
+        FilaBotones {
+            BotonOscuro("Historial", Modifier.weight(1f)) { vm.ir(Pantalla.HistorialLista) }
+            BotonOscuro("Registro", Modifier.weight(1f)) { vm.ir(Pantalla.Registro) }
+        }
+        // Sin conexión, la acción principal queda abajo de todo, a mano del pulgar
+        val c = vm.conexion
+        if (c !is Conexion.Conectado && c !is Conexion.Conectando) {
+            BotonAcento("Conectar al adaptador  →", Modifier.fillMaxWidth()) { abrirAdaptadores() }
         }
     }
 
@@ -337,7 +358,7 @@ private fun DialogoAdaptadores(vm: AppViewModel, cerrar: () -> Unit) {
 // ── Resultado ────────────────────────────────────────────────────────────────
 
 private fun peorGravedad(vm: AppViewModel, r: ResultadoEscaneo): Gravedad? =
-    r.modulos.flatMap { m -> m.dtcs.map { vm.info(it, m.categoria).gravedad } }.maxByOrNull { it.ordinal }
+    r.modulos.flatMap { m -> m.dtcs.map { vm.info(it, m.categoria, m.nombre).gravedad } }.maxByOrNull { it.ordinal }
 
 @Composable
 fun PantallaResultado(vm: AppViewModel) {
@@ -377,7 +398,7 @@ fun PantallaResultado(vm: AppViewModel) {
             r.voltaje?.let { Suave("Batería: $it") }
         }
 
-        val hayAjenos = r.modulos.any { m -> m.dtcs.any { vm.info(it, m.categoria).ajenos.isNotEmpty() } }
+        val hayAjenos = r.modulos.any { m -> m.dtcs.any { vm.info(it, m.categoria, m.nombre).ajenos.isNotEmpty() } }
         if (hayAjenos && vm.traducirAuto == null) {
             Tarjeta {
                 // En inglés lo que queda en otro idioma son las notas en español de las fichas curadas
@@ -463,7 +484,7 @@ private fun TarjetaModulo(vm: AppViewModel, m: ResultadoModulo, puedeBorrar: Boo
         }
         m.error?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = Tinta.Amarillo) }
         for (d in m.dtcs) {
-            val info = vm.info(d, m.categoria)
+            val info = vm.info(d, m.categoria, m.nombre)
             val nuevo = vm.clavesAnteriores?.let { (m.clave + "|" + d.codigo) !in it } == true
             Row(
                 Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
@@ -480,7 +501,7 @@ private fun TarjetaModulo(vm: AppViewModel, m: ResultadoModulo, puedeBorrar: Boo
                         if (nuevo) Etiqueta("NUEVO", LocalMarca.current.claro)
                     }
                     Text(
-                        if (info.fuente == FuenteInfo.NINGUNA) "Código propio de Mercedes · tocá para ver opciones" else vm.tr(info.titulo),
+                        if (info.fuente == FuenteInfo.NINGUNA) "Código propio de ${Auto.marcaCorta} · tocá para ver opciones" else vm.tr(info.titulo),
                         style = MaterialTheme.typography.bodyMedium, color = Tinta.Texto,
                     )
                     Suave(d.estado.texto())
@@ -505,7 +526,7 @@ fun PantallaDetalle(vm: AppViewModel, p: Pantalla.Detalle) {
         return
     }
     val (m, d) = par
-    val info = vm.info(d, m.categoria)
+    val info = vm.info(d, m.categoria, m.nombre)
     val contexto = LocalContext.current
     val marca = LocalMarca.current
     val idIa = m.clave + "|" + d.codigo
@@ -532,11 +553,12 @@ fun PantallaDetalle(vm: AppViewModel, p: Pantalla.Detalle) {
             if (info.gravedadEstimada) Suave("La gravedad se calculó con reglas generales; tomala como orientación.")
         }
 
+        if (info.mercedes.isNotEmpty()) TarjetaMercedes(vm, info, d.crudoHex)
         if (info.fuente == FuenteInfo.NINGUNA) {
             Tarjeta {
                 Text("Sin descripción local", style = MaterialTheme.typography.titleMedium)
                 Text(
-                    "Este código es propio de Mercedes para este módulo y su significado exacto solo figura en la " +
+                    "Este código es propio de ${Auto.marcaCorta} para este módulo y su significado exacto solo figura en la " +
                         "documentación del fabricante. No lo vamos a adivinar. Podés buscarlo en la web o pedirle una " +
                         "explicación orientativa a la IA.",
                     style = MaterialTheme.typography.bodyMedium,
@@ -597,7 +619,7 @@ fun PantallaDetalle(vm: AppViewModel, p: Pantalla.Detalle) {
         }
         FilaBotones {
             BotonOscuro("Buscar en la web", Modifier.weight(1f)) {
-                buscarEnLaWeb(contexto, "Mercedes W204 C350 ${m.nombre.substringBefore(" (")} código ${d.codigo}")
+                buscarEnLaWeb(contexto, "${if (Auto.esMercedes) "Mercedes W204 C350" else Auto.descripcion} ${m.nombre.substringBefore(" (")} código ${d.codigo}")
             }
             if (explicacion == null) {
                 BotonAcento("Explicame este error", Modifier.weight(1f), habilitado = vm.iaCargando == null) {
@@ -607,6 +629,30 @@ fun PantallaDetalle(vm: AppViewModel, p: Pantalla.Detalle) {
         }
         if (!vm.tieneClave) Suave("La explicación con IA es opcional: necesita una API key de Anthropic, que se carga en Ajustes.")
         if (info.relacionados.isNotEmpty()) Suave("Códigos relacionados: ${info.relacionados.joinToString()}")
+    }
+}
+
+/** Lo que dicen las listas del DAS de Mercedes sobre el código, con de dónde sale cada texto. */
+@Composable
+private fun TarjetaMercedes(vm: AppViewModel, info: ar.garibaldi.obd.dtc.InfoDtc, crudo: String) {
+    val marca = LocalMarca.current
+    Tarjeta(Modifier.border(1.dp, marca.claro.copy(alpha = 0.7f), RoundedCornerShape(16.dp))) {
+        Etiqueta(if (info.mercedes.size > 1) "SIGNIFICADOS POSIBLES SEGÚN MERCEDES" else "TEXTO DE MERCEDES", marca.claro)
+        if (info.mercedes.size > 1) {
+            Suave("No sabemos qué módulo es, así que el mismo número puede significar cosas distintas. Ponele nombre al módulo (en Módulos) para quedarte con el que corresponde.")
+        }
+        for (t in info.mercedes) {
+            if (info.mercedes.size > 1) Text(t.modulo, style = MaterialTheme.typography.titleMedium)
+            Text(vm.tr(t.texto), style = MaterialTheme.typography.bodyMedium)
+            if (t.evento) Suave("Es un evento: un registro informativo, no una falla.")
+        }
+        val origen = info.mercedes.first()
+        Suave(
+            if (origen.foro) "Fuente: foros y talleres especializados en el W204. Código $crudo."
+            else "Fuente: lista de diagnóstico de Mercedes (DAS) de un ${origen.origen}, de la misma época que el W204. " +
+                "En tu auto el texto puede variar. Código $crudo."
+        )
+        if (vm.tr(origen.texto) != origen.texto) Suave("Traducción automática del original en inglés: puede tener errores.")
     }
 }
 

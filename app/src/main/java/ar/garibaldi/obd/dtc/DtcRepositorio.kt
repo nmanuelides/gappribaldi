@@ -1,5 +1,6 @@
 package ar.garibaldi.obd.dtc
 
+import ar.garibaldi.obd.auto.Auto
 import ar.garibaldi.obd.modules.Categoria
 import ar.garibaldi.obd.i18n.Idioma
 import org.json.JSONArray
@@ -20,14 +21,23 @@ enum class FuenteInfo {
     /** Base abierta OBDex (en inglés; se puede traducir en el teléfono). */
     OBDEX,
 
-    /** Código propio de Mercedes sin descripción local: no se inventa nada. */
+    /** Código propio de la marca sin descripción local: no se inventa nada. */
     NINGUNA,
+
+    /** Código propio de Mercedes descripto por una lista del DAS de un auto de la misma época. */
+    MERCEDES,
 }
+
+/**
+ * Texto de un código según una lista del DAS de Mercedes. [modulo] es de qué lista sale y [origen] de qué auto;
+ * [evento] marca los registros informativos (no son fallas); [foro] los que salen de foros del W204.
+ */
+class TextoMercedes(val texto: String, val modulo: String, val origen: String, val evento: Boolean, val foro: Boolean)
 
 class Causa(val texto: String, val probabilidad: String?)
 
 /** Todo lo que sabemos de un código, listo para mostrar. */
-class InfoDtc(
+data class InfoDtc(
     val titulo: String,
     val explicacion: String?,
     val causas: List<Causa>,
@@ -42,6 +52,8 @@ class InfoDtc(
     val enIngles: Boolean,
     /** Textos que están en un idioma distinto al de la interfaz y conviene traducir en el teléfono. */
     val ajenos: List<String> = emptyList(),
+    /** Lo que dicen las listas del DAS de Mercedes (vacío en las otras marcas). */
+    val mercedes: List<TextoMercedes> = emptyList(),
 )
 
 /**
@@ -72,8 +84,72 @@ class DtcRepositorio(private val abrir: (String) -> InputStream?) {
 
     fun codigosCurados(): List<String> = curados.keys().asSequence().toList()
 
-    /** Ficha del código. [categoria] ajusta la gravedad estimada cuando no hay ficha curada. */
-    fun buscar(dtc: Dtc, categoria: Categoria): InfoDtc {
+    private val listasMercedes: JSONObject by lazy {
+        try {
+            abrir("mercedes.json.gz")?.use { JSONObject(GZIPInputStream(it).readBytes().toString(Charsets.UTF_8)) }
+                ?.optJSONObject("familias") ?: JSONObject()
+        } catch (_: Exception) {
+            JSONObject()
+        }
+    }
+
+    /**
+     * Qué listas del DAS corresponden a un módulo. Se decide por la categoría y el nombre que tiene el módulo;
+     * si no se sabe qué módulo es, se buscan en todas las de carrocería y confort.
+     */
+    private fun familiasDe(categoria: Categoria, modulo: String): List<String> {
+        val n = modulo.lowercase()
+        return when {
+            categoria == Categoria.MOTOR -> listOf("motor")
+            categoria == Categoria.CAJA -> listOf("caja")
+            categoria == Categoria.AIRBAG -> listOf("airbag")
+            categoria == Categoria.ARRANQUE && "elv" !in n && "traba" !in n -> listOf("ezs")
+            "sam delantero" in n -> listOf("sam_del")
+            "sam trasero" in n -> listOf("sam_tras")
+            "columna" in n -> listOf("columna")
+            "climatizador" in n -> listOf("clima")
+            "comand" in n || "radio" in n -> listOf("comand")
+            "techo" in n -> listOf("techo")
+            "distronic" in n -> listOf("distronic")
+            "tele aid" in n -> listOf("teleaid")
+            categoria == Categoria.TABLERO -> listOf("tablero")
+            categoria == Categoria.FRENOS && "neum" !in n -> listOf("esp")
+            else -> FAMILIAS_CARROCERIA
+        }
+    }
+
+    /** Textos del DAS para el código, solo en el Mercedes. */
+    fun textosMercedes(dtc: Dtc, categoria: Categoria, modulo: String = ""): List<TextoMercedes> {
+        if (!Auto.esMercedes) return emptyList()
+        val clave = dtc.crudoHex.take(4).uppercase()
+        return familiasDe(categoria, modulo).mapNotNull { f ->
+            val fam = listasMercedes.optJSONObject(f) ?: return@mapNotNull null
+            val c = fam.optJSONObject("codigos")?.optJSONObject(clave) ?: return@mapNotNull null
+            TextoMercedes(c.getString("d"), fam.getString("nombre"), fam.getString("origen"), c.optInt("e") == 1, c.optInt("w") == 1)
+        }
+    }
+
+    /** Ficha del código. [categoria] y [modulo] (su nombre) eligen las listas de Mercedes que corresponden. */
+    fun buscar(dtc: Dtc, categoria: Categoria, modulo: String = ""): InfoDtc {
+        val base = buscarBase(dtc, categoria)
+        val mb = textosMercedes(dtc, categoria, modulo)
+        if (mb.isEmpty()) return base
+        if (base.fuente != FuenteInfo.NINGUNA) {
+            // Código con descripción: el texto de Mercedes se agrega como dato extra
+            return base.copy(mercedes = mb, ajenos = base.ajenos + if (Idioma.ingles) emptyList() else mb.map { it.texto })
+        }
+        val soloEventos = mb.all { it.evento }
+        return base.copy(
+            titulo = if (mb.size == 1) mb[0].texto else "Código propio de ${Auto.marcaCorta} · ${mb.size} significados posibles",
+            gravedad = if (soloEventos) Gravedad.VERDE else base.gravedad,
+            fuente = FuenteInfo.MERCEDES,
+            enIngles = true,
+            ajenos = if (Idioma.ingles) emptyList() else mb.map { it.texto },
+            mercedes = mb,
+        )
+    }
+
+    private fun buscarBase(dtc: Dtc, categoria: Categoria): InfoDtc {
         val clave = dtc.claveGenerica
         if (clave != null) {
             val generica = familia(clave.substring(0, 3)).optJSONObject(clave)
@@ -84,7 +160,7 @@ class DtcRepositorio(private val abrir: (String) -> InputStream?) {
             if (generica != null) return deObdex(clave, generica, categoria)
         }
         return InfoDtc(
-            titulo = "Código propio de Mercedes",
+            titulo = "Código propio de ${Auto.marcaCorta}",
             explicacion = null,
             causas = emptyList(), sintomas = emptyList(), queRevisar = emptyList(),
             gravedad = if (categoria.seguridad) Gravedad.AMARILLO else Gravedad.VERDE,
@@ -106,7 +182,8 @@ class DtcRepositorio(private val abrir: (String) -> InputStream?) {
             else -> Gravedad.AMARILLO
         },
         gravedadEstimada = false,
-        notaMotor = c.optString("m").ifEmpty { null },
+        // Las notas "frecuente en este auto" están escritas para el M272 / 722.9 del C350
+        notaMotor = if (Auto.esMercedes) c.optString("m").ifEmpty { null } else null,
         relacionados = generica?.optJSONArray("r").textos(),
         fuente = FuenteInfo.CURADA,
         enIngles = false,
@@ -163,6 +240,11 @@ class DtcRepositorio(private val abrir: (String) -> InputStream?) {
             banderas and 1 != 0 -> Gravedad.AMARILLO // enciende el testigo de motor
             else -> Gravedad.VERDE
         }
+
+        /** Listas que se revisan cuando no se sabe qué módulo es (no se incluyen motor ni caja). */
+        private val FAMILIAS_CARROCERIA = listOf(
+            "esp", "airbag", "ezs", "sam_del", "sam_tras", "tablero", "clima", "columna", "techo", "comand", "teleaid", "distronic",
+        )
 
         private fun JSONArray?.textos(): List<String> =
             if (this == null) emptyList() else (0 until length()).map { getString(it) }

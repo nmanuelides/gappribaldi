@@ -16,6 +16,7 @@ import ar.garibaldi.obd.adapter.AdaptadorException
 import ar.garibaldi.obd.adapter.Elm327
 import ar.garibaldi.obd.adapter.InfoAdaptador
 import ar.garibaldi.obd.ai.AlmacenClave
+import ar.garibaldi.obd.auto.Auto
 import ar.garibaldi.obd.ai.ClaudeClient
 import ar.garibaldi.obd.dtc.Dtc
 import ar.garibaldi.obd.dtc.DtcRepositorio
@@ -88,7 +89,9 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     val log = FrameLog(File(dir, "logs"))
     val repo = DtcRepositorio { nombre -> runCatching { app.assets.open("dtc/$nombre") }.getOrNull() }
-    private val almacenModulos = AlmacenModulos(dir)
+    // Cada marca tiene su propio mapa de módulos (el del Mercedes queda en el archivo de siempre)
+    private val marcaInicial = Marcas.porNombre(prefs.getString("marca", null))
+    private var almacenModulos = AlmacenModulos(dir, archivoModulos(marcaInicial))
     private val historialStore = Historial(File(dir, "historial"))
     private val traductor = Traductor(dir)
     private val almacenClave = AlmacenClave(app)
@@ -116,20 +119,34 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     var bajandoTraduccion by mutableStateOf(false); private set
 
     // Apariencia: marca (colores de acento), texto del modelo y foto del auto para la portada
-    var marca by mutableStateOf(Marcas.porNombre(prefs.getString("marca", null))); private set
-    var modelo by mutableStateOf(prefs.getString("modelo", "C350") ?: "C350"); private set
+    var marca by mutableStateOf(marcaInicial); private set
+    var modelo by mutableStateOf(prefs.getString("modelo", null) ?: marcaInicial.modelo); private set
     private val archivoFoto = File(dir, "auto.img")
     var fotoAuto by mutableStateOf(archivoFoto.takeIf { it.exists() }); private set
     var versionFoto by mutableIntStateOf(0); private set
 
     fun elegirMarca(m: Marca) {
+        if (m.nombre == marca.nombre) return
+        // Si el modelo era el de fábrica de la marca anterior, pasa al de la nueva
+        if (modelo.equals(marca.modelo, ignoreCase = true)) modelo = m.modelo
         marca = m
-        prefs.edit().putString("marca", m.nombre).apply()
+        prefs.edit().putString("marca", m.nombre).putString("modelo", modelo).apply()
+        sincronizarAuto()
+        almacenModulos = AlmacenModulos(getApplication<Application>().filesDir, archivoModulos(m))
+        if (!esDemo) modulos = almacenModulos.cargar()
+        resultado = null
+        resultadoEsActual = false
     }
 
     fun cambiarModelo(texto: String) {
-        modelo = texto.trim().take(8).ifEmpty { "C350" }
+        modelo = texto.trim().take(8).ifEmpty { marca.modelo }
         prefs.edit().putString("modelo", modelo).apply()
+        sincronizarAuto()
+    }
+
+    private fun sincronizarAuto() {
+        Auto.marca = marca.nombre
+        Auto.modelo = modelo
     }
 
     /** Copia la foto elegida (idealmente un PNG con fondo transparente) para usarla en la portada. */
@@ -161,6 +178,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     init {
         Idioma.ingles = prefs.getString("idioma", "es") == "en"
+        sincronizarAuto()
         log.alAgregar = { versionLog++ }
         viewModelScope.launch(Dispatchers.IO) {
             val h = historialStore.listar()
@@ -367,7 +385,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun informe(): String? = resultado?.let { r ->
         // El informe busca los títulos por código: código → título ya traducido al idioma actual
         val titulos = r.modulos.flatMap { m ->
-            m.dtcs.mapNotNull { d -> d.claveGenerica?.let { it to tr(repo.buscar(d, m.categoria).titulo) } }
+            m.dtcs.mapNotNull { d -> d.claveGenerica?.let { it to tr(repo.buscar(d, m.categoria, m.nombre).titulo) } }
         }.toMap()
         Informe.texto(r, repo, titulos)
     }
@@ -445,7 +463,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     // ── Traducción y explicación con IA ──────────────────────────────────────
-    fun info(dtc: Dtc, categoria: Categoria): InfoDtc = repo.buscar(dtc, categoria)
+    fun info(dtc: Dtc, categoria: Categoria, modulo: String = ""): InfoDtc = repo.buscar(dtc, categoria, modulo)
 
     /** Texto en español si ya está traducido; si no, el original. */
     fun tr(texto: String): String = traducciones[claveTr(texto)] ?: texto
@@ -482,14 +500,14 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private suspend fun traducirTitulos(r: ResultadoEscaneo) {
-        val titulos = r.modulos.flatMap { m -> m.dtcs.map { repo.buscar(it, m.categoria) } }
+        val titulos = r.modulos.flatMap { m -> m.dtcs.map { repo.buscar(it, m.categoria, m.nombre) } }
             .filter { it.titulo in it.ajenos }.map { it.titulo }
         traducirTextos(titulos)
     }
 
     private fun traducirDetalle(p: Pantalla.Detalle) {
         val (m, d) = buscarDtc(p) ?: return
-        val info = repo.buscar(d, m.categoria)
+        val info = repo.buscar(d, m.categoria, m.nombre)
         if (info.ajenos.isEmpty()) return
         viewModelScope.launch { traducirTextos(info.ajenos) }
     }
@@ -516,12 +534,17 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         if (iaCargando != null) return
         iaCargando = id
         viewModelScope.launch {
-            val info = repo.buscar(d, m.categoria)
+            val info = repo.buscar(d, m.categoria, m.nombre)
             val contexto = buildString {
                 appendLine("Dato crudo: ${d.crudoHex} (en formato SAE sería ${d.formatoSae}). Estado: ${d.estado.texto()}.")
                 appendLine("Detalle del módulo: ${m.detalle}.")
-                if (info.fuente != FuenteInfo.NINGUNA) appendLine("Descripción genérica de la norma: ${info.titulo}.")
-                else appendLine("No tengo descripción local: es un código propio de Mercedes para ese módulo.")
+                if (info.fuente == FuenteInfo.CURADA || info.fuente == FuenteInfo.OBDEX) appendLine("Descripción genérica de la norma: ${info.titulo}.")
+                if (info.mercedes.isNotEmpty()) {
+                    appendLine("Según listas del DAS de Mercedes de autos de la misma época (no necesariamente iguales en el W204):")
+                    info.mercedes.forEach { appendLine("- ${it.modulo} (${it.origen}): ${it.texto}") }
+                } else if (info.fuente == FuenteInfo.NINGUNA) {
+                    appendLine("No tengo descripción local: es un código propio de ${Auto.marcaCorta} para ese módulo.")
+                }
                 val otros = resultado?.modulos.orEmpty().flatMap { x -> x.dtcs.map { "${x.nombre}: ${it.codigo}" } }
                     .filter { !it.endsWith(d.codigo) }.take(15)
                 if (otros.isNotEmpty()) appendLine("Otros códigos presentes en el auto: ${otros.joinToString("; ")}.")
@@ -629,3 +652,7 @@ sealed interface EstadoActualizacion {
     data class Compilando(val build: BuildEnCurso) : EstadoActualizacion
     data class Fallo(val texto: String) : EstadoActualizacion
 }
+
+/** Archivo del mapa de módulos de cada marca. */
+private fun archivoModulos(m: Marca): String =
+    if (m.nombre == Auto.MERCEDES) "modulos.json" else "modulos-" + m.nombre.lowercase().replace(Regex("[^a-z0-9]"), "") + ".json"

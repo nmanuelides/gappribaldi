@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ar.garibaldi.obd.BuildConfig
 import ar.garibaldi.obd.ai.ClaudeClient
+import ar.garibaldi.obd.auto.Auto
 import ar.garibaldi.obd.modules.CatalogoModulos
 import ar.garibaldi.obd.modules.Modulo
 import ar.garibaldi.obd.obd.Obd2
@@ -326,7 +327,11 @@ fun PantallaAjustes(vm: AppViewModel) {
     }
     Lista {
         Seccion("Apariencia")
-        Suave("Elegí la marca: cambia el color de acento de toda la app.")
+        Suave("Elegí la marca de tu auto: cambia los colores, el logo y el modelo de la portada.")
+        if (vm.marca.nombre != Auto.MERCEDES) Suave(
+            "Con esta marca se leen los códigos de motor y emisiones (OBD-II, iguales en todos los autos). " +
+                "Los demás módulos se pueden buscar en Módulos → Búsqueda completa, pero sus códigos propios no tienen descripción."
+        )
         Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             for (m in Marcas.lista) {
                 val elegida = m.nombre == vm.marca.nombre
