@@ -317,7 +317,6 @@ private val DICCIONARIO: List<Pair<String, String>> = listOf(
         "With this brand the app reads engine and emissions codes (OBD-II, the same on every car). Other modules can be found in Modules → Full search, but their brand-specific codes have no description.",
     "Dirección asistida" to "Power steering",
     "Radio / multimedia" to "Radio / media",
-    "Texto del modelo en la portada" to "Model text on the home screen",
     "Elegir foto del auto" to "Choose car photo",
     "Quitar foto" to "Remove photo",
     "Para que quede como en el diseño, usá un PNG del auto con fondo transparente: el nombre del modelo queda por detrás." to
@@ -384,6 +383,9 @@ private val DICCIONARIO: List<Pair<String, String>> = listOf(
     "Elegí la marca: la app se adapta a tus colores y a lo que puede leer de ese auto." to
         "Choose the brand: the app adapts its colors and what it can read from that car.",
     "Marcar {} como favorita" to "Mark {} as favorite",
+    "Modelo" to "Model",
+    "Modelo de {}" to "{} model",
+    "Elegido" to "Selected",
     "La app va a abrir directo con esta marca. Se cambia desde Ajustes." to "The app will open straight with this brand. You can change it in Settings.",
     "Si no marcás una favorita, la app te pregunta cada vez que se abre." to "If you don't mark a favorite, the app asks every time it opens.",
     "Continuar con {}  →" to "Continue with {}  →",

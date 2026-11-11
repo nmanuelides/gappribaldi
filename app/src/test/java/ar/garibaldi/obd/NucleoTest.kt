@@ -313,6 +313,15 @@ class NovedadesTest {
 
 class MarcasTest {
     @Test
+    fun cadaMarcaTraeSuModeloDeFabricaEnLaLista() {
+        for (m in ar.garibaldi.obd.ui.Marcas.lista) {
+            assertTrue("${m.nombre}: ${m.modelo}", m.modelo in m.modelos)
+            assertTrue(m.nombre, m.modelos.size > 3 && m.modelos.size == m.modelos.distinct().size)
+            assertTrue(m.nombre, m.modelos.all { it.length <= 14 })
+        }
+    }
+
+    @Test
     fun otraMarcaNoUsaElMapaDeMercedes() {
         try {
             Auto.marca = "Ford"; Auto.modelo = "FOCUS"

@@ -56,6 +56,8 @@ class Marca(
     val modelo: String,
     val logo: Int? = null,
     val foto: Int? = null,
+    /** Modelos que se pueden elegir para la portada (OBD-II, los que más se ven en la calle). */
+    val modelos: List<String> = listOf(modelo),
 ) {
     /** Degradé horizontal de los botones principales. */
     val degrade: Brush get() = Brush.horizontalGradient(listOf(claro, oscuro))
@@ -69,16 +71,25 @@ object Marcas {
         Marca(
             "Mercedes-Benz", Color(0xFF00B1A9), Color(0xFF00302E), "C350",
             logo = R.drawable.logo_mercedes, foto = R.drawable.auto_c350,
+            modelos = listOf("C180", "C200", "C220", "C230", "C250", "C280", "C300", "C320", "C350", "C63 AMG", "A200", "B200", "CLA200", "CLK350", "E250", "E350", "GLA200", "GLC300", "ML350", "SPRINTER"),
         ),
         // Colores de cada marca: el claro es el de su identidad, el oscuro la versión profunda del mismo tono
-        Marca("Ford", Color(0xFF1C5DD6), Color(0xFF00095B), "FOCUS", logo = R.drawable.logo_ford), // azul Ford del óvalo
-        Marca("Volkswagen", Color(0xFF00B0F0), Color(0xFF001E50), "POLO", logo = R.drawable.logo_vw, foto = R.drawable.auto_polo), // celeste y azul VW
-        Marca("Toyota", Color(0xFFEB0A1E), Color(0xFF4A0006), "COROLLA", logo = R.drawable.logo_toyota), // rojo Toyota
-        Marca("BMW", Color(0xFF3FA9F5), Color(0xFF0A3E73), "320I", logo = R.drawable.logo_bmw), // celeste del logo BMW
-        Marca("Mini", Color(0xFFA7A9AC), Color(0xFF2E3033), "COOPER", logo = R.drawable.logo_mini), // gris plata Mini
-        Marca("Chevrolet", Color(0xFFD1A23A), Color(0xFF4A3300), "CRUZE", logo = R.drawable.logo_chevrolet), // dorado del moño Chevrolet
-        Marca("Renault", Color(0xFFFFCC00), Color(0xFF3D3000), "SANDERO", logo = R.drawable.logo_renault), // amarillo Renault
-        Marca("Honda", Color(0xFFE40521), Color(0xFF3D0008), "CIVIC", logo = R.drawable.logo_honda), // rojo Honda
+        Marca("Ford", Color(0xFF1C5DD6), Color(0xFF00095B), "FOCUS", logo = R.drawable.logo_ford,
+            modelos = listOf("KA", "FIESTA", "FOCUS", "MONDEO", "FUSION", "ECOSPORT", "KUGA", "TERRITORY", "EXPLORER", "BRONCO", "RANGER", "MAVERICK", "F-150", "MUSTANG", "S-MAX")), // azul Ford del óvalo
+        Marca("Volkswagen", Color(0xFF00B0F0), Color(0xFF001E50), "POLO", logo = R.drawable.logo_vw, foto = R.drawable.auto_polo,
+            modelos = listOf("UP!", "GOL", "GOL TREND", "FOX", "SURAN", "VOYAGE", "POLO", "VIRTUS", "VENTO", "BORA", "GOLF", "PASSAT", "SCIROCCO", "NIVUS", "T-CROSS", "TAOS", "TIGUAN", "TOUAREG", "SAVEIRO", "AMAROK")), // celeste y azul VW
+        Marca("Toyota", Color(0xFFEB0A1E), Color(0xFF4A0006), "COROLLA", logo = R.drawable.logo_toyota,
+            modelos = listOf("ETIOS", "YARIS", "COROLLA", "COROLLA CROSS", "CAMRY", "PRIUS", "C-HR", "RAV4", "SW4", "HILUX", "PRADO", "LAND CRUISER", "86")), // rojo Toyota
+        Marca("BMW", Color(0xFF3FA9F5), Color(0xFF0A3E73), "320I", logo = R.drawable.logo_bmw,
+            modelos = listOf("118I", "120I", "130I", "320I", "325I", "328I", "330I", "335I", "340I", "520I", "530I", "540I", "X1", "X2", "X3", "X4", "X5", "X6", "Z4", "M2", "M3", "M4", "M5")), // celeste del logo BMW
+        Marca("Mini", Color(0xFFA7A9AC), Color(0xFF2E3033), "COOPER", logo = R.drawable.logo_mini,
+            modelos = listOf("ONE", "COOPER", "COOPER S", "JCW", "CLUBMAN", "COUNTRYMAN", "PACEMAN", "COUPE", "ROADSTER")), // gris plata Mini
+        Marca("Chevrolet", Color(0xFFD1A23A), Color(0xFF4A3300), "CRUZE", logo = R.drawable.logo_chevrolet,
+            modelos = listOf("CORSA", "CLASSIC", "CELTA", "AGILE", "ONIX", "PRISMA", "JOY", "AVEO", "SONIC", "COBALT", "ASTRA", "VECTRA", "CRUZE", "MERIVA", "SPIN", "TRACKER", "EQUINOX", "CAPTIVA", "TRAILBLAZER", "MONTANA", "S10", "CAMARO")), // dorado del moño Chevrolet
+        Marca("Renault", Color(0xFFFFCC00), Color(0xFF3D3000), "SANDERO", logo = R.drawable.logo_renault,
+            modelos = listOf("CLIO", "KWID", "SANDERO", "STEPWAY", "LOGAN", "SYMBOL", "MEGANE", "FLUENCE", "SCENIC", "LAGUNA", "KANGOO", "DUSTER", "CAPTUR", "KOLEOS", "OROCH", "ALASKAN")), // amarillo Renault
+        Marca("Honda", Color(0xFFE40521), Color(0xFF3D0008), "CIVIC", logo = R.drawable.logo_honda,
+            modelos = listOf("FIT", "CITY", "CIVIC", "ACCORD", "HR-V", "WR-V", "CR-V", "PILOT", "ODYSSEY")), // rojo Honda
     )
 
     fun porNombre(nombre: String?): Marca = lista.firstOrNull { it.nombre == nombre } ?: lista.first()

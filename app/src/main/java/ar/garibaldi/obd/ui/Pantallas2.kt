@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -21,6 +22,9 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -64,6 +68,64 @@ private fun Campo(valor: String, alCambiar: (String) -> Unit, etiqueta: String, 
         shape = RoundedCornerShape(12.dp),
         modifier = Modifier.fillMaxWidth(),
     )
+}
+
+/** Desplegable del modelo: muestra el elegido y al tocarlo abre la lista de modelos de la marca. */
+@Composable
+private fun ElegirModelo(vm: AppViewModel) {
+    val marca = LocalMarca.current
+    var abierto by remember { mutableStateOf(false) }
+    val forma = RoundedCornerShape(12.dp)
+    Row(
+        Modifier.fillMaxWidth().clip(forma).border(1.dp, Tinta.Borde, forma).clickable { abierto = true }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text("Modelo", style = MaterialTheme.typography.labelMedium, color = Tinta.TextoSuave)
+            Text(vm.modelo, style = MaterialTheme.typography.bodyLarge)
+        }
+        androidx.compose.material3.Icon(
+            Icons.Filled.ArrowDropDown, contentDescription = null,
+            tint = marca.claro, modifier = Modifier.size(28.dp),
+        )
+    }
+    if (abierto) {
+        // El modelo guardado puede no estar en la lista (versiones viejas dejaban escribirlo): se muestra igual
+        val modelos = (vm.marca.modelos + vm.modelo).distinct().sorted()
+        androidx.compose.ui.window.Dialog(onDismissRequest = { abierto = false }) {
+            Column(
+                Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Tinta.TarjetaAlta)
+                    .padding(vertical = 16.dp),
+            ) {
+                Text(
+                    "Modelo de ${vm.marca.nombre}", style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(horizontal = 20.dp).padding(bottom = 8.dp),
+                )
+                val inicio = modelos.indexOf(vm.modelo).coerceAtLeast(0)
+                LazyColumn(
+                    Modifier.heightIn(max = 460.dp),
+                    state = rememberLazyListState((inicio - 3).coerceAtLeast(0)),
+                ) {
+                    items(modelos) { m ->
+                        val elegido = m == vm.modelo
+                        Row(
+                            Modifier.fillMaxWidth().clickable { vm.cambiarModelo(m); abierto = false }
+                                .background(if (elegido) Tinta.Tarjeta else Color.Transparent)
+                                .padding(horizontal = 20.dp, vertical = 14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(m, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                            if (elegido) androidx.compose.material3.Icon(
+                                Icons.Filled.Check, contentDescription = "Elegido",
+                                tint = marca.claro, modifier = Modifier.size(22.dp),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 // ── Módulos ──────────────────────────────────────────────────────────────────
@@ -321,7 +383,6 @@ fun PantallaHistorial(vm: AppViewModel) {
 @Composable
 fun PantallaAjustes(vm: AppViewModel) {
     var clave by remember { mutableStateOf("") }
-    var modelo by remember(vm.marca.nombre) { mutableStateOf(vm.modelo) }
     val elegirFoto = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) vm.usarFoto(uri)
     }
@@ -343,7 +404,7 @@ fun PantallaAjustes(vm: AppViewModel) {
             "Con esta marca se leen los códigos de motor y emisiones (OBD-II, iguales en todos los autos). " +
                 "Los demás módulos se pueden buscar en Módulos → Búsqueda completa, pero sus códigos propios no tienen descripción."
         )
-        Campo(modelo, { modelo = it.take(8); vm.cambiarModelo(it) }, "Texto del modelo en la portada", mayusculas = true)
+        ElegirModelo(vm)
         FilaBotones {
             BotonOscuro("Elegir foto del auto", Modifier.weight(1f)) {
                 elegirFoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))

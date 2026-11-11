@@ -31,6 +31,14 @@
       "title_en": "New in v0.03.0",
       "body_en": "• Renault and Honda, with their logo and colors.\n• New brand picker: it's the first thing you see when the app opens. Mark a brand as favorite to open straight into it (change it from Settings).\n• Volkswagen now shows the Polo with its photo.",
       "link": null
+    },
+    {
+      "id": "v0.04.0",
+      "title": "Novedades de la v0.04.0",
+      "body": "• El modelo del auto se elige de una lista con los modelos de cada marca (Ajustes → Apariencia → Modelo), en vez de escribirlo.",
+      "title_en": "New in v0.04.0",
+      "body_en": "• The car model is picked from a list of each brand's models (Settings → Appearance → Model) instead of typed in.",
+      "link": null
     }
   ]
 }
