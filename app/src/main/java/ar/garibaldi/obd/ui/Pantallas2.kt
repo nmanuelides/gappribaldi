@@ -91,8 +91,7 @@ private fun ElegirModelo(vm: AppViewModel) {
         )
     }
     if (abierto) {
-        // El modelo guardado puede no estar en la lista (versiones viejas dejaban escribirlo): se muestra igual
-        val modelos = (vm.marca.modelos + vm.modelo).distinct().sorted()
+        val modelos = vm.marca.modelos.sorted()
         androidx.compose.ui.window.Dialog(onDismissRequest = { abierto = false }) {
             Column(
                 Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(Tinta.TarjetaAlta)

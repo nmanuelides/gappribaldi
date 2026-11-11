@@ -64,6 +64,10 @@ class Marca(
     /** Foto de la portada para ese modelo: la suya si la tiene, si no la de la marca. */
     fun fotoDe(modelo: String): Int? = fotos[modelo.uppercase()] ?: foto
 
+    /** El modelo si es de esta marca; si no (o si no hay), el de fábrica. */
+    fun modeloValido(texto: String?): String =
+        texto?.trim()?.uppercase()?.takeIf { it in modelos } ?: modelo
+
     /** Degradé horizontal de los botones principales. */
     val degrade: Brush get() = Brush.horizontalGradient(listOf(claro, oscuro))
 
@@ -91,7 +95,8 @@ object Marcas {
         Marca("BMW", Color(0xFF3FA9F5), Color(0xFF0A3E73), "535I", logo = R.drawable.logo_bmw, foto = R.drawable.auto_535i,
             modelos = listOf("116I", "118I", "120I", "125I", "130I", "135I", "M135I", "218I", "220I", "228I", "230I", "316I", "318I", "320I", "323I", "325I", "328I", "330I", "335I", "340I", "420I", "428I", "430I", "435I", "440I", "520I", "523I", "525I", "528I", "530I", "535I", "540I", "545I", "550I", "630I", "640I", "650I", "730I", "740I", "750I", "X1", "X2", "X3", "X4", "X5", "X6", "X7", "Z3", "Z4", "M2", "M3", "M4", "M5", "M6", "I3")), // celeste del logo BMW
         Marca("Mini", Color(0xFFA7A9AC), Color(0xFF2E3033), "COOPER", logo = R.drawable.logo_mini,
-            modelos = listOf("ONE", "COOPER", "COOPER S", "COOPER SE", "JCW", "CLUBMAN", "COUNTRYMAN", "PACEMAN", "COUPE", "ROADSTER", "CABRIO")), // gris plata Mini
+            modelos = listOf("ONE", "COOPER", "COOPER S", "COOPER R53", "COOPER SE", "JCW", "CLUBMAN", "COUNTRYMAN", "PACEMAN", "COUPE", "ROADSTER", "CABRIO"),
+            fotos = mapOf("COOPER R53" to R.drawable.auto_mini_r53)), // gris plata Mini
         Marca("Chevrolet", Color(0xFFD1A23A), Color(0xFF4A3300), "CRUZE", logo = R.drawable.logo_chevrolet,
             modelos = listOf("CORSA", "CLASSIC", "CELTA", "AGILE", "ONIX", "ONIX PLUS", "PRISMA", "JOY", "AVEO", "SONIC", "COBALT", "ASTRA", "VECTRA", "ZAFIRA", "CRUZE", "MERIVA", "SPIN", "TRACKER", "EQUINOX", "CAPTIVA", "TRAILBLAZER", "MONTANA", "S10", "SILVERADO", "CAMARO", "CORVETTE")), // dorado del moño Chevrolet
         Marca("Renault", Color(0xFFFFCC00), Color(0xFF3D3000), "SANDERO", logo = R.drawable.logo_renault,

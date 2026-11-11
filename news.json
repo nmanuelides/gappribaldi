@@ -63,6 +63,14 @@
       "title_en": "New in v0.07.0",
       "body_en": "• Many more models to pick for every brand (for example Mercedes A, B, C, CLA, CLK, E, S, SLK, GLA, GLC, ML classes and more, with their engine variants).\n• Mercedes A250 with its own photo and a new BMW 535i photo.\n• Own photos for the VW Polo GTS and the Ford Ranger XLT and Bronco Sport.",
       "link": null
+    },
+    {
+      "id": "v0.08.0",
+      "title": "Novedades de la v0.08.0",
+      "body": "• Al cambiar de marca ya no queda elegido un modelo de la marca anterior: cada marca recuerda su propio modelo.\n• Mini Cooper R53 con su foto y foto nueva de la Ford Bronco Sport.",
+      "title_en": "New in v0.08.0",
+      "body_en": "• Switching brands no longer keeps a model from the previous brand: each brand remembers its own model.\n• Mini Cooper R53 with its photo and a new Ford Bronco Sport photo.",
+      "link": null
     }
   ]
 }

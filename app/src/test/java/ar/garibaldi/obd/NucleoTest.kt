@@ -313,6 +313,15 @@ class NovedadesTest {
 
 class MarcasTest {
     @Test
+    fun unModeloDeOtraMarcaNoPasa() {
+        val ford = ar.garibaldi.obd.ui.Marcas.porNombre("Ford")
+        val mercedes = ar.garibaldi.obd.ui.Marcas.porNombre(Auto.MERCEDES)
+        assertEquals(ford.modelo, ford.modeloValido("A250"))
+        assertEquals(ford.modelo, ford.modeloValido(null))
+        assertEquals("A250", mercedes.modeloValido("a250"))
+    }
+
+    @Test
     fun fotoPorModelo() {
         val mercedes = ar.garibaldi.obd.ui.Marcas.porNombre(Auto.MERCEDES)
         assertEquals(ar.garibaldi.obd.R.drawable.auto_a200, mercedes.fotoDe("a200"))

@@ -120,7 +120,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     // Apariencia: marca (colores de acento), texto del modelo y foto del auto para la portada
     var marca by mutableStateOf(marcaInicial); private set
-    var modelo by mutableStateOf(prefs.getString("modelo", null) ?: marcaInicial.modelo); private set
+    // Cada marca recuerda su propio modelo ("modelo" suelto es de versiones viejas, que guardaban uno solo)
+    var modelo by mutableStateOf(
+        marcaInicial.modeloValido(prefs.getString(claveModelo(marcaInicial), null) ?: prefs.getString("modelo", null))
+    ); private set
     private val archivoFoto = File(dir, "auto.img")
     var fotoAuto by mutableStateOf(archivoFoto.takeIf { it.exists() }); private set
     var versionFoto by mutableIntStateOf(0); private set
@@ -142,10 +145,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     fun elegirMarca(m: Marca) {
         if (m.nombre == marca.nombre) return
-        // Si el modelo era el de fábrica de la marca anterior, pasa al de la nueva
-        if (modelo.equals(marca.modelo, ignoreCase = true)) modelo = m.modelo
+        // Cada marca vuelve al último modelo que se eligió en ella; un modelo de otra marca nunca pasa
+        modelo = m.modeloValido(prefs.getString(claveModelo(m), null))
         marca = m
-        prefs.edit().putString("marca", m.nombre).putString("modelo", modelo).apply()
+        prefs.edit().putString("marca", m.nombre).putString(claveModelo(m), modelo).apply()
         sincronizarAuto()
         almacenModulos = AlmacenModulos(getApplication<Application>().filesDir, archivoModulos(m))
         if (!esDemo) modulos = almacenModulos.cargar()
@@ -154,10 +157,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun cambiarModelo(texto: String) {
-        modelo = texto.trim().take(16).ifEmpty { marca.modelo }
-        prefs.edit().putString("modelo", modelo).apply()
+        modelo = marca.modeloValido(texto)
+        prefs.edit().putString(claveModelo(marca), modelo).apply()
         sincronizarAuto()
     }
+
+    private fun claveModelo(m: Marca) = "modelo:${m.nombre}"
 
     private fun sincronizarAuto() {
         Auto.marca = marca.nombre
