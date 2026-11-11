@@ -58,7 +58,12 @@ class Marca(
     val foto: Int? = null,
     /** Modelos que se pueden elegir para la portada (OBD-II, los que más se ven en la calle). */
     val modelos: List<String> = listOf(modelo),
+    /** Fotos propias de algunos modelos; los demás usan [foto]. */
+    val fotos: Map<String, Int> = emptyMap(),
 ) {
+    /** Foto de la portada para ese modelo: la suya si la tiene, si no la de la marca. */
+    fun fotoDe(modelo: String): Int? = fotos[modelo.uppercase()] ?: foto
+
     /** Degradé horizontal de los botones principales. */
     val degrade: Brush get() = Brush.horizontalGradient(listOf(claro, oscuro))
 
@@ -72,6 +77,7 @@ object Marcas {
             "Mercedes-Benz", Color(0xFF00B1A9), Color(0xFF00302E), "C350",
             logo = R.drawable.logo_mercedes, foto = R.drawable.auto_c350,
             modelos = listOf("C180", "C200", "C220", "C230", "C250", "C280", "C300", "C320", "C350", "C63 AMG", "A200", "B200", "CLA200", "CLK350", "E250", "E350", "GLA200", "GLC300", "ML350", "SPRINTER"),
+            fotos = mapOf("A200" to R.drawable.auto_a200),
         ),
         // Colores de cada marca: el claro es el de su identidad, el oscuro la versión profunda del mismo tono
         Marca("Ford", Color(0xFF1C5DD6), Color(0xFF00095B), "FOCUS", logo = R.drawable.logo_ford,

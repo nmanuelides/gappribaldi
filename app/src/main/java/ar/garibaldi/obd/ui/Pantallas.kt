@@ -200,7 +200,7 @@ private fun Portada(vm: AppViewModel) {
             contentAlignment = Alignment.TopCenter,
         ) {
             val modImagen = Modifier.fillMaxWidth(0.94f)
-            val fotoMarca = marca.foto
+            val fotoMarca = marca.fotoDe(vm.modelo)
             if (foto != null) {
                 Image(foto, "Foto del auto", modImagen, contentScale = ContentScale.FillWidth)
             } else if (fotoMarca != null) {

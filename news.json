@@ -47,6 +47,14 @@
       "title_en": "New in v0.05.0",
       "body_en": "• BMW now shows the 535i with its photo.",
       "link": null
+    },
+    {
+      "id": "v0.06.0",
+      "title": "Novedades de la v0.06.0",
+      "body": "• Mercedes A200 con su propia foto en la portada.",
+      "title_en": "New in v0.06.0",
+      "body_en": "• Mercedes A200 with its own photo on the home screen.",
+      "link": null
     }
   ]
 }

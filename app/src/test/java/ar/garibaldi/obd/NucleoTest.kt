@@ -313,11 +313,19 @@ class NovedadesTest {
 
 class MarcasTest {
     @Test
+    fun fotoPorModelo() {
+        val mercedes = ar.garibaldi.obd.ui.Marcas.porNombre(Auto.MERCEDES)
+        assertEquals(ar.garibaldi.obd.R.drawable.auto_a200, mercedes.fotoDe("a200"))
+        assertEquals(mercedes.foto, mercedes.fotoDe("C200"))
+    }
+
+    @Test
     fun cadaMarcaTraeSuModeloDeFabricaEnLaLista() {
         for (m in ar.garibaldi.obd.ui.Marcas.lista) {
             assertTrue("${m.nombre}: ${m.modelo}", m.modelo in m.modelos)
             assertTrue(m.nombre, m.modelos.size > 3 && m.modelos.size == m.modelos.distinct().size)
             assertTrue(m.nombre, m.modelos.all { it.length <= 14 })
+            assertTrue(m.nombre, m.fotos.keys.all { it in m.modelos })
         }
     }
 
