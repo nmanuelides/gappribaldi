@@ -76,26 +76,28 @@ object Marcas {
         Marca(
             "Mercedes-Benz", Color(0xFF00B1A9), Color(0xFF00302E), "C350",
             logo = R.drawable.logo_mercedes, foto = R.drawable.auto_c350,
-            modelos = listOf("C180", "C200", "C220", "C230", "C250", "C280", "C300", "C320", "C350", "C63 AMG", "A200", "B200", "CLA200", "CLK350", "E250", "E350", "GLA200", "GLC300", "ML350", "SPRINTER"),
-            fotos = mapOf("A200" to R.drawable.auto_a200),
+            modelos = listOf("A160", "A180", "A200", "A220", "A250", "A35 AMG", "A45 AMG", "B170", "B180", "B200", "B250", "C180", "C200", "C220", "C230", "C240", "C250", "C280", "C300", "C320", "C350", "C400", "C43 AMG", "C55 AMG", "C63 AMG", "CLA180", "CLA200", "CLA250", "CLA45 AMG", "CLK200", "CLK230", "CLK280", "CLK320", "CLK350", "CLK500", "CLS350", "CLS500", "E200", "E220", "E250", "E280", "E300", "E320", "E350", "E400", "E500", "E63 AMG", "S350", "S400", "S500", "S550", "S600", "SLK200", "SLK280", "SLK350", "SLC200", "SL350", "SL500", "GLA200", "GLA250", "GLA45 AMG", "GLB200", "GLB250", "GLC250", "GLC300", "GLC43 AMG", "GLK280", "GLK300", "GLK350", "ML320", "ML350", "ML500", "GLE350", "GLE400", "GL450", "GLS450", "G500", "VITO", "VIANO", "SPRINTER"),
+            fotos = mapOf("A200" to R.drawable.auto_a200, "A250" to R.drawable.auto_a250),
         ),
         // Colores de cada marca: el claro es el de su identidad, el oscuro la versión profunda del mismo tono
         Marca("Ford", Color(0xFF1C5DD6), Color(0xFF00095B), "FOCUS", logo = R.drawable.logo_ford,
-            modelos = listOf("KA", "FIESTA", "FOCUS", "MONDEO", "FUSION", "ECOSPORT", "KUGA", "TERRITORY", "EXPLORER", "BRONCO", "RANGER", "MAVERICK", "F-150", "MUSTANG", "S-MAX")), // azul Ford del óvalo
+            modelos = listOf("KA", "KA+", "FIESTA", "FOCUS", "FOCUS ST", "FOCUS RS", "MONDEO", "FUSION", "ESCORT", "ECOSPORT", "KUGA", "ESCAPE", "TERRITORY", "EDGE", "EXPLORER", "BRONCO", "BRONCO SPORT", "MAVERICK", "RANGER", "RANGER XLT", "F-100", "F-150", "MUSTANG", "S-MAX", "TRANSIT"),
+            fotos = mapOf("RANGER XLT" to R.drawable.auto_ranger_xlt, "BRONCO SPORT" to R.drawable.auto_bronco_sport)), // azul Ford del óvalo
         Marca("Volkswagen", Color(0xFF00B0F0), Color(0xFF001E50), "POLO", logo = R.drawable.logo_vw, foto = R.drawable.auto_polo,
-            modelos = listOf("UP!", "GOL", "GOL TREND", "FOX", "SURAN", "VOYAGE", "POLO", "VIRTUS", "VENTO", "BORA", "GOLF", "PASSAT", "SCIROCCO", "NIVUS", "T-CROSS", "TAOS", "TIGUAN", "TOUAREG", "SAVEIRO", "AMAROK")), // celeste y azul VW
+            modelos = listOf("UP!", "GOL", "GOL TREND", "FOX", "CROSSFOX", "SURAN", "VOYAGE", "POLO", "POLO GTS", "VIRTUS", "VENTO", "BORA", "JETTA", "GOLF", "GOLF GTI", "GOLF R", "PASSAT", "CC", "SCIROCCO", "BEETLE", "NIVUS", "T-CROSS", "TAOS", "TIGUAN", "TIGUAN ALLSPACE", "TOUAREG", "SHARAN", "SAVEIRO", "AMAROK"),
+            fotos = mapOf("POLO GTS" to R.drawable.auto_polo_gts)), // celeste y azul VW
         Marca("Toyota", Color(0xFFEB0A1E), Color(0xFF4A0006), "COROLLA", logo = R.drawable.logo_toyota,
-            modelos = listOf("ETIOS", "YARIS", "COROLLA", "COROLLA CROSS", "CAMRY", "PRIUS", "C-HR", "RAV4", "SW4", "HILUX", "PRADO", "LAND CRUISER", "86")), // rojo Toyota
+            modelos = listOf("ETIOS", "YARIS", "YARIS CROSS", "COROLLA", "COROLLA CROSS", "CAMRY", "PRIUS", "C-HR", "RAV4", "SW4", "FORTUNER", "HILUX", "PRADO", "LAND CRUISER", "INNOVA", "86", "GR86", "GR YARIS", "SUPRA")), // rojo Toyota
         Marca("BMW", Color(0xFF3FA9F5), Color(0xFF0A3E73), "535I", logo = R.drawable.logo_bmw, foto = R.drawable.auto_535i,
-            modelos = listOf("118I", "120I", "130I", "320I", "325I", "328I", "330I", "335I", "340I", "520I", "530I", "535I", "540I", "X1", "X2", "X3", "X4", "X5", "X6", "Z4", "M2", "M3", "M4", "M5")), // celeste del logo BMW
+            modelos = listOf("116I", "118I", "120I", "125I", "130I", "135I", "M135I", "218I", "220I", "228I", "230I", "316I", "318I", "320I", "323I", "325I", "328I", "330I", "335I", "340I", "420I", "428I", "430I", "435I", "440I", "520I", "523I", "525I", "528I", "530I", "535I", "540I", "545I", "550I", "630I", "640I", "650I", "730I", "740I", "750I", "X1", "X2", "X3", "X4", "X5", "X6", "X7", "Z3", "Z4", "M2", "M3", "M4", "M5", "M6", "I3")), // celeste del logo BMW
         Marca("Mini", Color(0xFFA7A9AC), Color(0xFF2E3033), "COOPER", logo = R.drawable.logo_mini,
-            modelos = listOf("ONE", "COOPER", "COOPER S", "JCW", "CLUBMAN", "COUNTRYMAN", "PACEMAN", "COUPE", "ROADSTER")), // gris plata Mini
+            modelos = listOf("ONE", "COOPER", "COOPER S", "COOPER SE", "JCW", "CLUBMAN", "COUNTRYMAN", "PACEMAN", "COUPE", "ROADSTER", "CABRIO")), // gris plata Mini
         Marca("Chevrolet", Color(0xFFD1A23A), Color(0xFF4A3300), "CRUZE", logo = R.drawable.logo_chevrolet,
-            modelos = listOf("CORSA", "CLASSIC", "CELTA", "AGILE", "ONIX", "PRISMA", "JOY", "AVEO", "SONIC", "COBALT", "ASTRA", "VECTRA", "CRUZE", "MERIVA", "SPIN", "TRACKER", "EQUINOX", "CAPTIVA", "TRAILBLAZER", "MONTANA", "S10", "CAMARO")), // dorado del moño Chevrolet
+            modelos = listOf("CORSA", "CLASSIC", "CELTA", "AGILE", "ONIX", "ONIX PLUS", "PRISMA", "JOY", "AVEO", "SONIC", "COBALT", "ASTRA", "VECTRA", "ZAFIRA", "CRUZE", "MERIVA", "SPIN", "TRACKER", "EQUINOX", "CAPTIVA", "TRAILBLAZER", "MONTANA", "S10", "SILVERADO", "CAMARO", "CORVETTE")), // dorado del moño Chevrolet
         Marca("Renault", Color(0xFFFFCC00), Color(0xFF3D3000), "SANDERO", logo = R.drawable.logo_renault,
-            modelos = listOf("CLIO", "KWID", "SANDERO", "STEPWAY", "LOGAN", "SYMBOL", "MEGANE", "FLUENCE", "SCENIC", "LAGUNA", "KANGOO", "DUSTER", "CAPTUR", "KOLEOS", "OROCH", "ALASKAN")), // amarillo Renault
+            modelos = listOf("CLIO", "CLIO MIO", "TWINGO", "KWID", "SANDERO", "STEPWAY", "LOGAN", "SYMBOL", "MEGANE", "MEGANE RS", "FLUENCE", "SCENIC", "LAGUNA", "KANGOO", "DUSTER", "DUSTER OROCH", "CAPTUR", "KOLEOS", "ALASKAN", "MASTER")), // amarillo Renault
         Marca("Honda", Color(0xFFE40521), Color(0xFF3D0008), "CIVIC", logo = R.drawable.logo_honda,
-            modelos = listOf("FIT", "CITY", "CIVIC", "ACCORD", "HR-V", "WR-V", "CR-V", "PILOT", "ODYSSEY")), // rojo Honda
+            modelos = listOf("FIT", "CITY", "CIVIC", "CIVIC SI", "CIVIC TYPE R", "ACCORD", "HR-V", "WR-V", "ZR-V", "CR-V", "PILOT", "ODYSSEY")), // rojo Honda
     )
 
     fun porNombre(nombre: String?): Marca = lista.firstOrNull { it.nombre == nombre } ?: lista.first()

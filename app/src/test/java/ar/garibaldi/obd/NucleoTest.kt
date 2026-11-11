@@ -324,7 +324,7 @@ class MarcasTest {
         for (m in ar.garibaldi.obd.ui.Marcas.lista) {
             assertTrue("${m.nombre}: ${m.modelo}", m.modelo in m.modelos)
             assertTrue(m.nombre, m.modelos.size > 3 && m.modelos.size == m.modelos.distinct().size)
-            assertTrue(m.nombre, m.modelos.all { it.length <= 14 })
+            assertTrue(m.nombre, m.modelos.all { it.length <= 16 })
             assertTrue(m.nombre, m.fotos.keys.all { it in m.modelos })
         }
     }

@@ -154,7 +154,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun cambiarModelo(texto: String) {
-        modelo = texto.trim().take(14).ifEmpty { marca.modelo }
+        modelo = texto.trim().take(16).ifEmpty { marca.modelo }
         prefs.edit().putString("modelo", modelo).apply()
         sincronizarAuto()
     }
