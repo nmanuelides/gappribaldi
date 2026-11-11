@@ -9,3 +9,8 @@ dist/
 
 # PDFs que baja tools/mercedes_dtc.py
 tools/_mercedes_pdf/
+
+# Imágenes originales que se dejan en la raíz para convertir (la app usa las de res/drawable-nodpi)
+/*.png
+/*.webp
+/*.jpg

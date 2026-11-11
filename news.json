@@ -39,6 +39,14 @@
       "title_en": "New in v0.04.0",
       "body_en": "• The car model is picked from a list of each brand's models (Settings → Appearance → Model) instead of typed in.",
       "link": null
+    },
+    {
+      "id": "v0.05.0",
+      "title": "Novedades de la v0.05.0",
+      "body": "• BMW ahora muestra el 535i con su foto.",
+      "title_en": "New in v0.05.0",
+      "body_en": "• BMW now shows the 535i with its photo.",
+      "link": null
     }
   ]
 }

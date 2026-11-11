@@ -80,8 +80,8 @@ object Marcas {
             modelos = listOf("UP!", "GOL", "GOL TREND", "FOX", "SURAN", "VOYAGE", "POLO", "VIRTUS", "VENTO", "BORA", "GOLF", "PASSAT", "SCIROCCO", "NIVUS", "T-CROSS", "TAOS", "TIGUAN", "TOUAREG", "SAVEIRO", "AMAROK")), // celeste y azul VW
         Marca("Toyota", Color(0xFFEB0A1E), Color(0xFF4A0006), "COROLLA", logo = R.drawable.logo_toyota,
             modelos = listOf("ETIOS", "YARIS", "COROLLA", "COROLLA CROSS", "CAMRY", "PRIUS", "C-HR", "RAV4", "SW4", "HILUX", "PRADO", "LAND CRUISER", "86")), // rojo Toyota
-        Marca("BMW", Color(0xFF3FA9F5), Color(0xFF0A3E73), "320I", logo = R.drawable.logo_bmw,
-            modelos = listOf("118I", "120I", "130I", "320I", "325I", "328I", "330I", "335I", "340I", "520I", "530I", "540I", "X1", "X2", "X3", "X4", "X5", "X6", "Z4", "M2", "M3", "M4", "M5")), // celeste del logo BMW
+        Marca("BMW", Color(0xFF3FA9F5), Color(0xFF0A3E73), "535I", logo = R.drawable.logo_bmw, foto = R.drawable.auto_535i,
+            modelos = listOf("118I", "120I", "130I", "320I", "325I", "328I", "330I", "335I", "340I", "520I", "530I", "535I", "540I", "X1", "X2", "X3", "X4", "X5", "X6", "Z4", "M2", "M3", "M4", "M5")), // celeste del logo BMW
         Marca("Mini", Color(0xFFA7A9AC), Color(0xFF2E3033), "COOPER", logo = R.drawable.logo_mini,
             modelos = listOf("ONE", "COOPER", "COOPER S", "JCW", "CLUBMAN", "COUNTRYMAN", "PACEMAN", "COUPE", "ROADSTER")), // gris plata Mini
         Marca("Chevrolet", Color(0xFFD1A23A), Color(0xFF4A3300), "CRUZE", logo = R.drawable.logo_chevrolet,
