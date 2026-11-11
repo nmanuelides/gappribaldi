@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Silueta genérica de un sedán visto de frente. Es un marcador de posición:
+     desde Ajustes se puede elegir una foto real del auto (PNG con fondo transparente). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="400dp"
+    android:height="190dp"
+    android:viewportWidth="400"
+    android:viewportHeight="190">
+    <!-- ruedas -->
+    <path android:fillColor="#050506" android:pathData="M46,128h50v52q0,6 -6,6h-38q-6,0 -6,-6z" />
+    <path android:fillColor="#050506" android:pathData="M304,128h50v52q0,6 -6,6h-38q-6,0 -6,-6z" />
+    <!-- techo y parabrisas -->
+    <path android:fillColor="#232327" android:pathData="M118,74L142,28Q148,18 162,18H238Q252,18 258,28L282,74Z" />
+    <path android:fillColor="#0B0B0D" android:pathData="M132,70L150,34Q153,28 162,28H238Q247,28 250,34L268,70Z" />
+    <!-- espejos -->
+    <path android:fillColor="#2C2C31" android:pathData="M84,64h26q6,0 6,6v6h-38v-6q0,-6 6,-6z" />
+    <path android:fillColor="#2C2C31" android:pathData="M290,64h26q6,0 6,6v6h-38v-6q0,-6 6,-6z" />
+    <!-- carrocería -->
+    <path android:fillColor="#34343A" android:pathData="M40,150V112Q42,86 78,76Q200,62 322,76Q358,86 360,112V150Q360,160 350,160H50Q40,160 40,150Z" />
+    <path android:fillColor="#26262B" android:pathData="M40,132H360V150Q360,160 350,160H50Q40,160 40,150Z" />
+    <!-- capot -->
+    <path android:strokeColor="#45454C" android:strokeWidth="2" android:pathData="M150,72Q200,80 250,72" />
+    <!-- parrilla -->
+    <path android:fillColor="#08080A" android:pathData="M150,92H250Q256,92 254,100L248,124Q246,130 240,130H160Q154,130 152,124L146,100Q144,92 150,92Z" />
+    <path android:strokeColor="#3A3A40" android:strokeWidth="2" android:pathData="M150,104H250M152,116H248" />
+    <path android:fillColor="#08080A" android:strokeColor="#8A8A93" android:strokeWidth="3" android:pathData="M200,97a14,14 0,1 0,0.01 0z" />
+    <!-- faros -->
+    <path android:fillColor="#EAF6F6" android:pathData="M58,96Q84,88 128,92L134,112Q96,118 62,116Q54,106 58,96Z" />
+    <path android:fillColor="#EAF6F6" android:pathData="M342,96Q316,88 272,92L266,112Q304,118 338,116Q346,106 342,96Z" />
+    <path android:fillColor="#9FB7B7" android:pathData="M100,96a8,8 0,1 0,0.01 0z" />
+    <path android:fillColor="#9FB7B7" android:pathData="M300,96a8,8 0,1 0,0.01 0z" />
+    <!-- tomas inferiores -->
+    <path android:fillColor="#08080A" android:pathData="M64,138H130V152H70Q64,152 64,146Z" />
+    <path android:fillColor="#08080A" android:pathData="M270,138H336V146Q336,152 330,152H270Z" />
+    <path android:fillColor="#08080A" android:pathData="M144,138H256V152H144Z" />
+</vector>
