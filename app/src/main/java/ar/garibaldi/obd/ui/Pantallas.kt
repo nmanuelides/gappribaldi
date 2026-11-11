@@ -210,6 +210,7 @@ fun PantallaInicio(vm: AppViewModel) {
     }
 
     Lista {
+        BannerActualizacion(vm)
         Portada(vm)
         when (val c = vm.conexion) {
             is Conexion.Conectado -> {
@@ -263,6 +264,8 @@ fun PantallaInicio(vm: AppViewModel) {
     }
 
     if (elegirAdaptador) DialogoAdaptadores(vm) { elegirAdaptador = false }
+    // Novedades del desarrollador: de a una, cada una se muestra una sola vez
+    if (vm.trabajo == null && !elegirAdaptador) vm.novedades.firstOrNull()?.let { m -> DialogoNovedad(vm, m) }
     if (avisoEscaneo) {
         val voltaje = (vm.conexion as? Conexion.Conectado)?.info?.voltaje
         val bajo = voltaje?.filter { it.isDigit() || it == '.' }?.toDoubleOrNull()?.let { it < 11.8 } == true
@@ -605,4 +608,60 @@ fun PantallaDetalle(vm: AppViewModel, p: Pantalla.Detalle) {
         if (!vm.tieneClave) Suave("La explicación con IA es opcional: necesita una API key de Anthropic, que se carga en Ajustes.")
         if (info.relacionados.isNotEmpty()) Suave("Códigos relacionados: ${info.relacionados.joinToString()}")
     }
+}
+
+// ── Actualizaciones y novedades ──────────────────────────────────────────────
+
+/** Aviso arriba de la portada cuando hay una versión nueva (como en MTG Reforged). */
+@Composable
+fun BannerActualizacion(vm: AppViewModel) {
+    when (val a = vm.actualizacion) {
+        is EstadoActualizacion.Disponible -> Tarjeta(Modifier.border(1.dp, LocalMarca.current.claro, RoundedCornerShape(16.dp))) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(Modifier.weight(1f)) {
+                    Text("Versión nueva disponible", style = MaterialTheme.typography.titleMedium)
+                    Suave(a.nombre)
+                }
+                BotonAcento("Actualizar") { vm.instalarActualizacion() }
+            }
+        }
+        is EstadoActualizacion.Bajando -> Tarjeta {
+            Text("Bajando la actualización…", style = MaterialTheme.typography.bodyMedium)
+            androidx.compose.material3.LinearProgressIndicator(
+                progress = { a.progreso }, modifier = Modifier.fillMaxWidth(),
+                color = LocalMarca.current.claro, trackColor = Tinta.Borde,
+            )
+        }
+        is EstadoActualizacion.Fallo -> Tarjeta {
+            Text("No se pudo actualizar: ${a.texto}", style = MaterialTheme.typography.bodySmall, color = Tinta.Rojo)
+        }
+        else -> Unit // "compilando" y "al día" se ven solo en Ajustes
+    }
+}
+
+@Composable
+private fun DialogoNovedad(vm: AppViewModel, m: ar.garibaldi.obd.update.Novedades.Mensaje) {
+    val uri = androidx.compose.ui.platform.LocalUriHandler.current
+    val titulo = if (Idioma.ingles) m.tituloEn ?: m.titulo else m.titulo
+    val cuerpo = if (Idioma.ingles) m.cuerpoEn ?: m.cuerpo else m.cuerpo
+    // El texto ya viene en el idioma elegido: se dibuja sin pasar por el diccionario
+    AlertDialog(
+        onDismissRequest = { vm.cerrarNovedad(m) },
+        containerColor = Tinta.TarjetaAlta,
+        shape = RoundedCornerShape(18.dp),
+        title = {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Etiqueta("NOVEDADES", LocalMarca.current.claro)
+                if (titulo.isNotBlank()) androidx.compose.material3.Text(titulo, style = MaterialTheme.typography.titleLarge, color = Tinta.Texto)
+            }
+        },
+        text = {
+            androidx.compose.material3.Text(
+                cuerpo, style = MaterialTheme.typography.bodyMedium, color = Tinta.Texto,
+                modifier = Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState()),
+            )
+        },
+        confirmButton = { BotonAcento("OK") { vm.cerrarNovedad(m) } },
+        dismissButton = m.link?.let { link -> { BotonOscuro("Abrir link") { runCatching { uri.openUri(link) } } } },
+    )
 }

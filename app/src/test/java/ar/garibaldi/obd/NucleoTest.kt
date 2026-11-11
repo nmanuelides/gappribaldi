@@ -290,3 +290,21 @@ private object Escaneo {
         listOf(ar.garibaldi.obd.scan.ResultadoModulo("mod-7E0", "Motor (ME 9.7)", Categoria.MOTOR, "Dirección 7E0 → 7E8 · KWP", listOf(dtc), null)),
     )
 }
+
+class NovedadesTest {
+    @Test fun leeElNewsDelRepo() {
+        val mensajes = ar.garibaldi.obd.update.Novedades.parsear(File("../news.json").readText())!!
+        assertTrue(mensajes.size >= 2)
+        assertTrue(mensajes.all { it.id.isNotBlank() && it.titulo.isNotBlank() && it.cuerpo.isNotBlank() })
+        assertTrue(mensajes.all { it.tituloEn != null && it.cuerpoEn != null }) // todos traen versión en inglés
+        assertNull(mensajes.first().link)
+    }
+
+    @Test fun changelogSoloParaVersionesInstaladas() {
+        val n = ar.garibaldi.obd.update.Novedades
+        assertTrue(n.esParaLaVersionInstalada("v0.01.0", "0.01.0"))
+        assertTrue(n.esParaLaVersionInstalada("v0.01.0", "0.02.0"))
+        assertFalse(n.esParaLaVersionInstalada("v0.03.0", "0.02.0"))
+        assertTrue(n.esParaLaVersionInstalada("2026-11-11-aviso", "0.01.0")) // los avisos siempre
+    }
+}

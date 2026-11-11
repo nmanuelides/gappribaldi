@@ -1,0 +1,20 @@
+{
+  "messages": [
+    {
+      "id": "2026-11-11-bienvenida",
+      "title": "¡Bienvenido a Gappribaldi!",
+      "body": "Acá van a aparecer las novedades y los avisos del desarrollador. Cada mensaje se muestra una sola vez.\n\nLa app ahora se actualiza sola: cuando haya una versión nueva vas a ver un aviso arriba en la pantalla de inicio.",
+      "title_en": "Welcome to Gappribaldi!",
+      "body_en": "News and notices from the developer will show up here. Each message is shown only once.\n\nThe app now updates itself: when there's a new version you'll see a notice at the top of the home screen.",
+      "link": null
+    },
+    {
+      "id": "v0.01.0",
+      "title": "Novedades de la v0.01.0",
+      "body": "• Primera versión publicada.\n• Actualizaciones automáticas y mensajes de novedades.\n• Interfaz en español e inglés (botón ES/EN arriba en todas las pantallas).\n• Portada con la foto del C350 y el modelo de borde a borde.",
+      "title_en": "New in v0.01.0",
+      "body_en": "• First published version.\n• Automatic updates and news messages.\n• Spanish and English interface (ES/EN switch at the top of every screen).\n• Home screen with the C350 photo and the model name edge to edge.",
+      "link": null
+    }
+  ]
+}

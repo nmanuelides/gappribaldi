@@ -44,6 +44,10 @@ import ar.garibaldi.obd.scan.ResultadoModulo
 import ar.garibaldi.obd.transport.BluetoothSppTransport
 import ar.garibaldi.obd.transport.ObdTransport
 import ar.garibaldi.obd.transport.SimulatedTransport
+import ar.garibaldi.obd.update.Actualizador
+import ar.garibaldi.obd.update.BuildEnCurso
+import ar.garibaldi.obd.update.BuildsEnCurso
+import ar.garibaldi.obd.update.Novedades
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -534,7 +538,94 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    // ── Actualizaciones y novedades (mismo sistema que MTG Reforged) ─────────
+    private val actualizador = Actualizador(app)
+    private var versionNueva: Actualizador.Version? = null
+    var actualizacion by mutableStateOf<EstadoActualizacion>(EstadoActualizacion.Nada); private set
+    val novedades = mutableStateListOf<Novedades.Mensaje>()
+    private var vigilandoBuild: Job? = null
+
+    init {
+        viewModelScope.launch(Dispatchers.IO) {
+            val pendientes = Novedades.pendientes(app)
+            withContext(Dispatchers.Main) { novedades.clear(); novedades.addAll(pendientes) }
+        }
+        buscarActualizacion()
+    }
+
+    /** Se llama cada vez que la app vuelve a primer plano. */
+    fun buscarActualizacion() {
+        if (actualizacion is EstadoActualizacion.Bajando) return
+        viewModelScope.launch { consultar(builds = false) }
+    }
+
+    /** El botón "Buscar actualizaciones" de Ajustes: también avisa si hay una versión compilándose. */
+    fun buscarActualizacionAhora() {
+        if (actualizacion is EstadoActualizacion.Bajando) return
+        viewModelScope.launch {
+            actualizacion = EstadoActualizacion.Buscando
+            if (consultar(builds = true) == EstadoActualizacion.Nada) actualizacion = EstadoActualizacion.AlDia
+        }
+    }
+
+    /**
+     * Un release publicado o, solo si el usuario lo pidió ([builds]), una versión que todavía se está
+     * compilando. Mientras compila vuelve a mirar cada minuto hasta que sale el release.
+     */
+    private suspend fun consultar(builds: Boolean): EstadoActualizacion {
+        versionNueva = runCatching { actualizador.buscar() }.getOrNull()
+        val encontrado = versionNueva?.let { EstadoActualizacion.Disponible(it.nombre) }
+            ?: (if (builds) runCatching { BuildsEnCurso.actual() }.getOrNull() else null)?.let { EstadoActualizacion.Compilando(it) }
+            ?: EstadoActualizacion.Nada
+        actualizacion = encontrado
+        if (encontrado is EstadoActualizacion.Compilando && vigilandoBuild?.isActive != true) {
+            vigilandoBuild = viewModelScope.launch {
+                while (actualizacion is EstadoActualizacion.Compilando) {
+                    delay(60_000L)
+                    if (actualizacion !is EstadoActualizacion.Compilando) break
+                    consultar(builds = true)
+                }
+            }
+        }
+        return encontrado
+    }
+
+    fun instalarActualizacion() {
+        val v = versionNueva ?: return
+        if (!actualizador.puedeInstalar()) {
+            mensaje = "Para actualizar, permití que Gappribaldi instale apps y volvé a tocar Actualizar."
+            actualizador.abrirPermisoDeInstalacion()
+            return
+        }
+        viewModelScope.launch {
+            try {
+                val apk = actualizador.bajar(v) { actualizacion = EstadoActualizacion.Bajando(it) }
+                actualizador.instalar(apk)
+                actualizacion = EstadoActualizacion.Disponible(v.nombre)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                actualizacion = EstadoActualizacion.Fallo(e.message ?: "error")
+            }
+        }
+    }
+
+    fun cerrarNovedad(m: Novedades.Mensaje) {
+        Novedades.marcarVisto(getApplication(), m)
+        novedades.remove(m)
+    }
+
     override fun onCleared() {
         desconectar()
     }
+}
+
+sealed interface EstadoActualizacion {
+    data object Nada : EstadoActualizacion
+    data object Buscando : EstadoActualizacion
+    data object AlDia : EstadoActualizacion
+    data class Disponible(val nombre: String) : EstadoActualizacion
+    data class Bajando(val progreso: Float) : EstadoActualizacion
+    data class Compilando(val build: BuildEnCurso) : EstadoActualizacion
+    data class Fallo(val texto: String) : EstadoActualizacion
 }

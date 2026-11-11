@@ -7,6 +7,8 @@
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <!-- Solo para la traducción (una descarga) y la explicación con IA opcional -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Autoactualización: instalar el APK nuevo bajado de los releases de GitHub -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <uses-feature android:name="android.hardware.bluetooth" android:required="false" />
 

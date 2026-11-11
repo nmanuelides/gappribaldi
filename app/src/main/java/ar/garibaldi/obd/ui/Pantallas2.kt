@@ -376,6 +376,30 @@ fun PantallaAjustes(vm: AppViewModel) {
             if (vm.tieneClave) BotonOscuro("Borrar key", Modifier.weight(1f), colorTexto = Tinta.Rojo) { vm.guardarClave(null) }
         }
 
+        Seccion("Actualizaciones")
+        Suave("Versión instalada: ${BuildConfig.VERSION_NAME}")
+        Suave("La app se fija sola si hay una versión nueva cada vez que la abrís.")
+        when (val a = vm.actualizacion) {
+            EstadoActualizacion.Buscando -> FilaCargando("Buscando actualizaciones…")
+            EstadoActualizacion.AlDia -> Text("Tenés la última versión.", style = MaterialTheme.typography.bodyMedium, color = Tinta.Verde)
+            is EstadoActualizacion.Compilando -> Tarjeta {
+                Text("Hay una versión nueva compilándose" + (a.build.version?.let { " ($it)" } ?: ""), style = MaterialTheme.typography.bodyMedium)
+                androidx.compose.material3.LinearProgressIndicator(
+                    progress = { a.build.progreso() }, modifier = Modifier.fillMaxWidth(),
+                    color = LocalMarca.current.claro, trackColor = Tinta.Borde,
+                )
+                Suave("Se avisa sola en la pantalla de inicio cuando esté lista.")
+            }
+            else -> Unit
+        }
+        if (vm.actualizacion is EstadoActualizacion.Disponible) {
+            BannerActualizacion(vm)
+        } else {
+            BotonOscuro("Buscar actualizaciones", Modifier.fillMaxWidth(), habilitado = vm.actualizacion != EstadoActualizacion.Buscando) {
+                vm.buscarActualizacionAhora()
+            }
+        }
+
         Seccion("Acerca de")
         Suave(
             "Gappribaldi ${BuildConfig.VERSION_NAME}. Hecha para un Mercedes-Benz C350 W204 (M272, 7G-Tronic) con OBDLink MX+.\n\n" +

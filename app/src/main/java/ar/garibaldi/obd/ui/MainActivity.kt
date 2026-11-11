@@ -48,11 +48,20 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import java.io.File
 
 class MainActivity : ComponentActivity() {
+    private var modelo: AppViewModel? = null
+
+    override fun onResume() {
+        super.onResume()
+        // Como en MTG Reforged: cada vez que la app vuelve a primer plano se fija si hay versión nueva
+        modelo?.buscarActualizacion()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             val vm: AppViewModel = viewModel()
+            modelo = vm
             TemaGaribaldi(vm.marca) { App(vm) }
         }
     }

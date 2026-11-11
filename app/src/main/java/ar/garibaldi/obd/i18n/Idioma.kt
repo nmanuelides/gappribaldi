@@ -475,6 +475,25 @@ private val DICCIONARIO: List<Pair<String, String>> = listOf(
     "No se pudo conectar por Bluetooth con {}: {}" to "Couldn't connect over Bluetooth to {}: {}",
     "Sin conexión Bluetooth" to "No Bluetooth connection",
 
+    // ── Actualizaciones y novedades ──
+    "Versión nueva disponible" to "New version available",
+    "Actualizar" to "Update",
+    "Bajando la actualización…" to "Downloading the update…",
+    "No se pudo actualizar: {}" to "Couldn't update: {}",
+    "Para actualizar, permití que Gappribaldi instale apps y volvé a tocar Actualizar." to
+        "To update, allow Gappribaldi to install apps and tap Update again.",
+    "NOVEDADES" to "NEWS",
+    "Abrir link" to "Open link",
+    "Actualizaciones" to "Updates",
+    "Versión instalada: {}" to "Installed version: {}",
+    "La app se fija sola si hay una versión nueva cada vez que la abrís." to "The app checks for a new version on its own every time you open it.",
+    "Buscando actualizaciones…" to "Checking for updates…",
+    "Tenés la última versión." to "You have the latest version.",
+    "Hay una versión nueva compilándose" to "A new version is being built",
+    "Hay una versión nueva compilándose ({})" to "A new version is being built ({})",
+    "Se avisa sola en la pantalla de inicio cuando esté lista." to "It will show up on the home screen when it's ready.",
+    "Buscar actualizaciones" to "Check for updates",
+
     // ── Traducción de fichas ──
     "Algunas notas están en español" to "Some notes are in Spanish",
     "Algunas notas solo están en español. Se pueden traducir en el teléfono bajando, una sola vez, un paquete de unos 30 MB." to

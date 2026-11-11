@@ -33,6 +33,19 @@ Toda la interfaz está en español rioplatense y pensada para alguien que no es 
 crudo y el módulo, y **no inventa una descripción**. El significado exacto de esos códigos solo está en la
 documentación del fabricante; para eso están los botones "Buscar en la web" y "Explicame este error".
 
+## Actualizaciones y novedades
+
+Mismo sistema que MTG Reforged:
+
+- **Autoactualización**: cada push a `main` hace que GitHub Actions compile el APK firmado y publique un release
+  `build-<versionCode>`. La app se fija al abrirse; si hay una versión más nueva muestra "Versión nueva disponible",
+  la baja con progreso y abre el instalador de Android. En Ajustes → Actualizaciones se puede buscar a mano
+  (también avisa si hay una versión compilándose).
+- **Novedades**: `news.json` en la raíz del repo. La app lo lee al abrirse y muestra cada mensaje una vez,
+  en español o inglés según el idioma elegido. Los changelogs (`id` = `v0.02.0`) aparecen recién cuando esa versión
+  está instalada; si se saltearon varias, se juntan en un solo mensaje.
+- **Versión**: `apk=` en `version.properties` (1 → v0.01.0). Pasos para publicar en [CLAUDE.md](CLAUDE.md).
+
 ## Compilar e instalar
 
 Necesitás [Android Studio](https://developer.android.com/studio) (trae todo lo necesario).
