@@ -125,6 +125,21 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     var fotoAuto by mutableStateOf(archivoFoto.takeIf { it.exists() }); private set
     var versionFoto by mutableIntStateOf(0); private set
 
+    /** Marca que la app abre directo, sin preguntar. Sin favorita, al abrirse pregunta la marca cada vez. */
+    var marcaFavorita by mutableStateOf(prefs.getString("marcaFavorita", null)); private set
+    var eligiendoMarca by mutableStateOf(prefs.getString("marcaFavorita", null) == null); private set
+
+    fun abrirSelectorMarca() { eligiendoMarca = true }
+
+    fun cerrarSelectorMarca() { eligiendoMarca = false }
+
+    fun confirmarMarca(m: Marca, favorita: Boolean) {
+        elegirMarca(m)
+        marcaFavorita = if (favorita) m.nombre else marcaFavorita?.takeIf { it != m.nombre }
+        prefs.edit().putString("marcaFavorita", marcaFavorita).apply()
+        eligiendoMarca = false
+    }
+
     fun elegirMarca(m: Marca) {
         if (m.nombre == marca.nombre) return
         // Si el modelo era el de fábrica de la marca anterior, pasa al de la nueva

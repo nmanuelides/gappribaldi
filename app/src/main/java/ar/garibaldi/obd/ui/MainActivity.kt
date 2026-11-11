@@ -71,6 +71,11 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun App(vm: AppViewModel) {
+    // Lo primero al abrir: qué auto es (salvo que haya una marca favorita)
+    if (vm.eligiendoMarca) {
+        SelectorMarca(vm)
+        return
+    }
     BackHandler(enabled = vm.pila.size > 1) { vm.volver() }
     val pantalla = vm.pantalla
 
@@ -159,6 +164,7 @@ private fun TituloMarca(vm: AppViewModel) {
             // Los emblemas redondos o cuadrados (VW, BMW) necesitan más alto que los logos apaisados
             val alto = when {
                 proporcion < 1.6f -> 64.dp
+                proporcion > 7f -> 30.dp
                 proporcion > 5f -> 40.dp
                 else -> 46.dp
             }

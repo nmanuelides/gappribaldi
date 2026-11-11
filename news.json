@@ -23,6 +23,14 @@
       "title_en": "New in v0.02.0",
       "body_en": "• Now works with Ford, Volkswagen, Toyota, BMW, Mini and Chevrolet (Settings → Appearance), with their logo and colors. With those brands it reads engine and emissions.\n• Mercedes-specific codes: 1,494 descriptions from 14 modules (engine, 7G gearbox, ESP, airbag, SAM, instrument cluster, climate control and more), taken from Mercedes diagnostic lists.\n• Bigger brand logo, below the top bar.\n• The home screen sits at the bottom, with \"Connect to adapter\" last.\n• Secondary buttons are black with a border in the brand gradient.\n• New C350 photo.",
       "link": null
+    },
+    {
+      "id": "v0.03.0",
+      "title": "Novedades de la v0.03.0",
+      "body": "• Renault y Honda, con su logo y sus colores.\n• Selector de marca nuevo: es lo primero que ves al abrir la app. Marcá una marca como favorita para que abra directo con ella (se cambia desde Ajustes).\n• Volkswagen ahora muestra el Polo con su foto.",
+      "title_en": "New in v0.03.0",
+      "body_en": "• Renault and Honda, with their logo and colors.\n• New brand picker: it's the first thing you see when the app opens. Mark a brand as favorite to open straight into it (change it from Settings).\n• Volkswagen now shows the Polo with its photo.",
+      "link": null
     }
   ]
 }

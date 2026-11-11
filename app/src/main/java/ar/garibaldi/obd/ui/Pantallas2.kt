@@ -321,30 +321,28 @@ fun PantallaHistorial(vm: AppViewModel) {
 @Composable
 fun PantallaAjustes(vm: AppViewModel) {
     var clave by remember { mutableStateOf("") }
-    var modelo by remember { mutableStateOf(vm.modelo) }
+    var modelo by remember(vm.marca.nombre) { mutableStateOf(vm.modelo) }
     val elegirFoto = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
         if (uri != null) vm.usarFoto(uri)
     }
     Lista {
         Seccion("Apariencia")
-        Suave("Elegí la marca de tu auto: cambia los colores, el logo y el modelo de la portada.")
+        Tarjeta {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                Column(Modifier.weight(1f)) {
+                    Text(vm.marca.nombre, style = MaterialTheme.typography.titleLarge)
+                    Suave(
+                        if (vm.marcaFavorita == vm.marca.nombre) "Favorita: la app abre directo con esta marca."
+                        else "Sin favorita: la app pregunta la marca cada vez que se abre."
+                    )
+                }
+                BotonOscuro("Cambiar") { vm.abrirSelectorMarca() }
+            }
+        }
         if (vm.marca.nombre != Auto.MERCEDES) Suave(
             "Con esta marca se leen los códigos de motor y emisiones (OBD-II, iguales en todos los autos). " +
                 "Los demás módulos se pueden buscar en Módulos → Búsqueda completa, pero sus códigos propios no tienen descripción."
         )
-        Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            for (m in Marcas.lista) {
-                val elegida = m.nombre == vm.marca.nombre
-                Column(
-                    Modifier.clip(RoundedCornerShape(14.dp))
-                        .border(2.dp, if (elegida) Color.White else Color.Transparent, RoundedCornerShape(14.dp))
-                        .background(m.degrade).clickable { vm.elegirMarca(m) }
-                        .padding(horizontal = 16.dp, vertical = 18.dp),
-                ) {
-                    Text(m.nombre, style = MaterialTheme.typography.titleMedium, color = Color.White)
-                }
-            }
-        }
         Campo(modelo, { modelo = it.take(8); vm.cambiarModelo(it) }, "Texto del modelo en la portada", mayusculas = true)
         FilaBotones {
             BotonOscuro("Elegir foto del auto", Modifier.weight(1f)) {

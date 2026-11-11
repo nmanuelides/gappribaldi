@@ -72,11 +72,13 @@ object Marcas {
         ),
         // Colores de cada marca: el claro es el de su identidad, el oscuro la versión profunda del mismo tono
         Marca("Ford", Color(0xFF1C5DD6), Color(0xFF00095B), "FOCUS", logo = R.drawable.logo_ford), // azul Ford del óvalo
-        Marca("Volkswagen", Color(0xFF00B0F0), Color(0xFF001E50), "GOLF", logo = R.drawable.logo_vw), // celeste y azul VW
+        Marca("Volkswagen", Color(0xFF00B0F0), Color(0xFF001E50), "POLO", logo = R.drawable.logo_vw, foto = R.drawable.auto_polo), // celeste y azul VW
         Marca("Toyota", Color(0xFFEB0A1E), Color(0xFF4A0006), "COROLLA", logo = R.drawable.logo_toyota), // rojo Toyota
         Marca("BMW", Color(0xFF3FA9F5), Color(0xFF0A3E73), "320I", logo = R.drawable.logo_bmw), // celeste del logo BMW
         Marca("Mini", Color(0xFFA7A9AC), Color(0xFF2E3033), "COOPER", logo = R.drawable.logo_mini), // gris plata Mini
         Marca("Chevrolet", Color(0xFFD1A23A), Color(0xFF4A3300), "CRUZE", logo = R.drawable.logo_chevrolet), // dorado del moño Chevrolet
+        Marca("Renault", Color(0xFFFFCC00), Color(0xFF3D3000), "SANDERO", logo = R.drawable.logo_renault), // amarillo Renault
+        Marca("Honda", Color(0xFFE40521), Color(0xFF3D0008), "CIVIC", logo = R.drawable.logo_honda), // rojo Honda
     )
 
     fun porNombre(nombre: String?): Marca = lista.firstOrNull { it.nombre == nombre } ?: lista.first()

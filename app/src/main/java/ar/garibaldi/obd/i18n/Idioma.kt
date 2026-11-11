@@ -380,6 +380,17 @@ private val DICCIONARIO: List<Pair<String, String>> = listOf(
     "Código propio de {} · {} significados posibles" to "{}-specific code · {} possible meanings",
     "SIGNIFICADOS POSIBLES SEGÚN MERCEDES" to "POSSIBLE MEANINGS ACCORDING TO MERCEDES",
     "TEXTO DE MERCEDES" to "MERCEDES TEXT",
+    "¿Qué auto tenés?" to "What car do you have?",
+    "Elegí la marca: la app se adapta a tus colores y a lo que puede leer de ese auto." to
+        "Choose the brand: the app adapts its colors and what it can read from that car.",
+    "Marcar {} como favorita" to "Mark {} as favorite",
+    "La app va a abrir directo con esta marca. Se cambia desde Ajustes." to "The app will open straight with this brand. You can change it in Settings.",
+    "Si no marcás una favorita, la app te pregunta cada vez que se abre." to "If you don't mark a favorite, the app asks every time it opens.",
+    "Continuar con {}  →" to "Continue with {}  →",
+    "Favorita" to "Favorite",
+    "Favorita: la app abre directo con esta marca." to "Favorite: the app opens straight with this brand.",
+    "Sin favorita: la app pregunta la marca cada vez que se abre." to "No favorite: the app asks for the brand every time it opens.",
+    "Cambiar" to "Change",
     "No sabemos qué módulo es, así que el mismo número puede significar cosas distintas. Ponele nombre al módulo (en Módulos) para quedarte con el que corresponde." to
         "We don't know which module this is, so the same number can mean different things. Name the module (in Modules) to keep only the right one.",
     "Es un evento: un registro informativo, no una falla." to "It's an event: an informational record, not a fault.",
