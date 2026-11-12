@@ -30,6 +30,7 @@ Toda la interfaz está en español rioplatense y pensada para alguien que no es 
 | Fichas curadas (`tools/curados.py`) | 395 códigos en español, escritos para este auto, con notas del M272 y la 722.9 |
 | [OBDex](https://github.com/foerbsnavi/OBDex) (CC0, dominio público) | Los 9.533 códigos genéricos SAE J2012 con causas, síntomas y banderas (en inglés) |
 | Listas del DAS de Mercedes ([benzbits.com/dtc](http://benzbits.com/dtc/), `tools/mercedes_dtc.py`) | 1.494 códigos propios de 14 módulos (motor ME 9.7, caja 722.9, ESP, airbag, EZS, SAM, tablero, clima…), de autos de la misma época que el W204 (W203, CLK) |
+| Bases abiertas [kierandrewett/obd](https://github.com/kierandrewett/obd) y [Wal33D/dtc-database](https://github.com/Wal33D/dtc-database) (MIT, `tools/marcas_dtc.py`) | ~6.700 códigos propios de Ford, VW, Toyota, BMW/Mini, Chevrolet y Honda (P1xxx, B1/B2, C1/C2, U1/U2), con las listas de marcas hermanas como respaldo |
 | ML Kit de Google, en el teléfono | Traduce al español los textos de OBDex (una descarga de ~30 MB, opcional) |
 | Claude (opcional) | Explicación orientativa de un código puntual, incluidos los propios de Mercedes |
 
@@ -123,6 +124,7 @@ app/src/main/java/ar/garibaldi/obd/
   ui/          Compose: tema por marca y pantallas
 tools/
   build_dtc_db.py   regenera los assets de OBDex
+  marcas_dtc.py     regenera marcas.json.gz (códigos propios de cada marca)
   curados.py        fichas curadas en español
 ```
 

@@ -240,6 +240,7 @@ fun PantallaInicio(vm: AppViewModel) {
                     c.info.voltaje?.let { Suave("Batería: $it") }
                 }
                 BotonAcento("Escanear el auto  →", Modifier.fillMaxWidth(), habilitado = vm.trabajo == null) { avisoEscaneo = true }
+                BotonOscuro("Dashboard", Modifier.fillMaxWidth()) { vm.ir(Pantalla.Tableros) }
                 FilaBotones {
                     BotonOscuro("Datos en vivo", Modifier.weight(1f)) { vm.ir(Pantalla.EnVivo) }
                     BotonOscuro("Emisiones", Modifier.weight(1f)) { vm.ir(Pantalla.Emisiones) }
@@ -600,6 +601,14 @@ fun PantallaDetalle(vm: AppViewModel, p: Pantalla.Detalle) {
             info.fuente == FuenteInfo.OBDEX && vm.tr(info.titulo) != info.titulo ->
                 Suave("Traducción automática de la base abierta OBDex: puede tener errores. Título original: ${info.titulo}")
             info.fuente == FuenteInfo.OBDEX -> Suave("Descripción en inglés de la base abierta OBDex.")
+            info.fuente == FuenteInfo.MARCA -> {
+                val origen = info.marcaHermana?.let { "de $it, del mismo grupo que ${Auto.marcaCorta}" } ?: "de ${Auto.marcaCorta}"
+                Suave(
+                    "Código propio de ${Auto.marcaCorta}. La descripción sale de una lista abierta de códigos $origen, " +
+                        "juntada por la comunidad. Según el modelo y el año el texto puede variar un poco." +
+                        (if (vm.tr(info.titulo) != info.titulo) " Original: ${info.titulo}" else "")
+                )
+            }
             else -> Unit
         }
         if (d.claveGenerica != null && d.origen != ar.garibaldi.obd.dtc.OrigenDtc.OBD_CONFIRMADO && !m.esObd && m.categoria != Categoria.MOTOR && m.categoria != Categoria.CAJA) {

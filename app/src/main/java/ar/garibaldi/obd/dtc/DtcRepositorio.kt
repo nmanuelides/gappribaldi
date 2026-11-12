@@ -26,6 +26,9 @@ enum class FuenteInfo {
 
     /** Código propio de Mercedes descripto por una lista del DAS de un auto de la misma época. */
     MERCEDES,
+
+    /** Código propio de la marca descripto por una lista abierta de códigos de esa marca (en inglés). */
+    MARCA,
 }
 
 /**
@@ -54,6 +57,8 @@ data class InfoDtc(
     val ajenos: List<String> = emptyList(),
     /** Lo que dicen las listas del DAS de Mercedes (vacío en las otras marcas). */
     val mercedes: List<TextoMercedes> = emptyList(),
+    /** Con [FuenteInfo.MARCA]: la marca hermana de cuya lista sale el texto (null si es de la propia marca). */
+    val marcaHermana: String? = null,
 )
 
 /**
@@ -91,6 +96,24 @@ class DtcRepositorio(private val abrir: (String) -> InputStream?) {
         } catch (_: Exception) {
             JSONObject()
         }
+    }
+
+    private val listasMarcas: JSONObject by lazy {
+        try {
+            abrir("marcas.json.gz")?.use { JSONObject(GZIPInputStream(it).readBytes().toString(Charsets.UTF_8)) }
+                ?.optJSONObject("marcas") ?: JSONObject()
+        } catch (_: Exception) {
+            JSONObject()
+        }
+    }
+
+    /**
+     * Texto del código en la lista abierta de la marca del auto. Solo para códigos en formato SAE (motor, caja y
+     * módulos UDS): el hex crudo de los módulos KWP de carrocería no se puede buscar así.
+     */
+    private fun textoMarca(dtc: Dtc): JSONObject? {
+        if (!dtc.codigo.startsWith(dtc.formatoSae)) return null
+        return listasMarcas.optJSONObject(Auto.marca)?.optJSONObject(dtc.formatoSae)
     }
 
     /**
@@ -133,7 +156,18 @@ class DtcRepositorio(private val abrir: (String) -> InputStream?) {
     fun buscar(dtc: Dtc, categoria: Categoria, modulo: String = ""): InfoDtc {
         val base = buscarBase(dtc, categoria)
         val mb = textosMercedes(dtc, categoria, modulo)
-        if (mb.isEmpty()) return base
+        if (mb.isEmpty()) {
+            if (base.fuente != FuenteInfo.NINGUNA) return base
+            val t = textoMarca(dtc) ?: return base
+            val texto = t.getString("d")
+            return base.copy(
+                titulo = texto,
+                fuente = FuenteInfo.MARCA,
+                enIngles = true,
+                ajenos = if (Idioma.ingles) emptyList() else listOf(texto),
+                marcaHermana = t.optString("o").ifEmpty { null },
+            )
+        }
         if (base.fuente != FuenteInfo.NINGUNA) {
             // Código con descripción: el texto de Mercedes se agrega como dato extra
             return base.copy(mercedes = mb, ajenos = base.ajenos + if (Idioma.ingles) emptyList() else mb.map { it.texto })

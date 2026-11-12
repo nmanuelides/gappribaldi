@@ -155,21 +155,38 @@ class SimulatedTransport(private val demoraMs: Long = 12) : ObdTransport {
 
     private val pidsMotor = setOf(
         0x01, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F, 0x10, 0x11,
-        0x14, 0x15, 0x18, 0x19, 0x1F, 0x20, 0x21, 0x2F, 0x31, 0x33, 0x40, 0x42,
+        0x14, 0x15, 0x18, 0x19, 0x1F, 0x20, 0x21, 0x2F, 0x31, 0x33, 0x40, 0x42, 0x46, 0x5C,
     )
 
+    /** Ciclo de manejo de la demo (40 s): arranca, acelera pasando cambios, va a 130 km/h y frena. */
+    private fun manejo(): Pair<Double, Double> {
+        val t = (System.nanoTime() / 1e9) % 40.0
+        val vel = when {
+            t < 4 -> 0.0
+            t < 22 -> 130.0 * Math.sin((t - 4) / 18 * Math.PI / 2)
+            t < 28 -> 130.0
+            t < 36 -> 130.0 * (1 - (t - 28) / 8)
+            else -> 0.0
+        }
+        if (vel < 1) return 0.0 to (720.0 + 15 * Math.sin(t * 7))
+        val cortes = doubleArrayOf(0.0, 18.0, 38.0, 60.0, 84.0, 108.0, 125.0)
+        val relacion = doubleArrayOf(8.0, 13.0, 19.0, 26.0, 33.0, 40.0, 47.0)
+        val marcha = cortes.indexOfLast { vel >= it }.coerceAtLeast(0)
+        return vel to maxOf(900.0, vel / relacion[marcha] * 1000 + 600 * (if (t < 22) 1 else 0))
+    }
+
     private fun valorPid(pid: Int): List<Int>? = when (pid) {
-        0x04 -> listOf(0x38)
+        0x04 -> listOf((manejo().second / 6500 * 200 + 40).toInt().coerceAtMost(255))
         0x05 -> listOf(0x82) // 90 °C
         0x06 -> listOf(0x86); 0x07 -> listOf(0xA2) // ajuste largo banco 1 alto: coherente con P0171
         0x08 -> listOf(0x81); 0x09 -> listOf(0x84)
         0x0B -> listOf(0x21)
-        0x0C -> { val rpm = (680 + (System.nanoTime() / 300_000_000 % 5) * 6).toInt() * 4; listOf(rpm shr 8, rpm and 0xFF) }
-        0x0D -> listOf(0)
+        0x0C -> { val rpm = (manejo().second * 4).toInt(); listOf(rpm shr 8, rpm and 0xFF) }
+        0x0D -> listOf(manejo().first.toInt())
         0x0E -> listOf(0x92)
         0x0F -> listOf(0x41)
-        0x10 -> listOf(0x02, 0x1C)
-        0x11 -> listOf(0x24)
+        0x10 -> { val m = ((3.0 + manejo().second / 6500 * 55) * 100).toInt(); listOf(m shr 8, m and 0xFF) }
+        0x11 -> listOf((manejo().second / 6500 * 180 + 30).toInt().coerceAtMost(255))
         0x14, 0x18 -> listOf(0x5A, 0x80)
         0x15, 0x19 -> listOf(0x8C, 0xFF)
         0x1F -> listOf(0x01, 0x2C)
@@ -178,6 +195,8 @@ class SimulatedTransport(private val demoraMs: Long = 12) : ObdTransport {
         0x31 -> listOf(0x0B, 0xB8)
         0x33 -> listOf(0x65)
         0x42 -> listOf(0x36, 0x4C)
+        0x46 -> listOf(0x3D) // 21 °C
+        0x5C -> listOf(0x87) // 95 °C
         else -> null
     }
 

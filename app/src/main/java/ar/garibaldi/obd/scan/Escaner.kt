@@ -188,7 +188,7 @@ object Informe {
                 val info = repo.buscar(d, m.categoria, m.nombre)
                 val titulo = when {
                     info.fuente == FuenteInfo.NINGUNA -> "código propio de ${Auto.marcaCorta}, sin descripción local"
-                    else -> titulos[d.claveGenerica] ?: info.titulo
+                    else -> titulos[d.codigo] ?: info.titulo
                 }
                 sb.appendLine("  ${d.codigo} — $titulo")
                 sb.appendLine("     Estado: ${d.estado.texto()} · Gravedad${if (info.gravedadEstimada) " estimada" else ""}: ${info.gravedad.titulo}")

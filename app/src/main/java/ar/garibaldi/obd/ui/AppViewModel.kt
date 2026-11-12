@@ -49,6 +49,7 @@ import ar.garibaldi.obd.update.Actualizador
 import ar.garibaldi.obd.update.BuildEnCurso
 import ar.garibaldi.obd.update.BuildsEnCurso
 import ar.garibaldi.obd.update.Novedades
+import ar.garibaldi.obd.ui.dash.DatosTablero
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -66,6 +67,8 @@ sealed interface Pantalla {
     data class Detalle(val claveModulo: String, val codigo: String) : Pantalla
     data object Modulos : Pantalla
     data object EnVivo : Pantalla
+    data object Tableros : Pantalla
+    data class TableroVivo(val indice: Int) : Pantalla
     data object Emisiones : Pantalla
     data object Conexion : Pantalla
     data object Registro : Pantalla
@@ -156,6 +159,14 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         resultadoEsActual = false
     }
 
+    /** Velocidad en millas por hora en vez de km/h (se elige en Ajustes). */
+    var millas by mutableStateOf(prefs.getBoolean("millas", false)); private set
+
+    fun cambiarUnidad(enMillas: Boolean) {
+        millas = enMillas
+        prefs.edit().putBoolean("millas", enMillas).apply()
+    }
+
     fun cambiarModelo(texto: String) {
         modelo = marca.modeloValido(texto)
         prefs.edit().putString(claveModelo(marca), modelo).apply()
@@ -195,6 +206,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private val candado = Mutex()
     private var tarea: Job? = null
     private var tareaVivo: Job? = null
+    private var tareaTablero: Job? = null
 
     init {
         Idioma.ingles = prefs.getString("idioma", "es") == "en"
@@ -219,6 +231,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             is Pantalla.Detalle -> traducirDetalle(p)
             else -> Unit
         }
+        sincronizarTablero()
     }
 
     /** Devuelve false si ya no hay a dónde volver (la actividad se cierra). */
@@ -226,6 +239,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         if (pila.size <= 1) return false
         if (pila.last() == Pantalla.EnVivo) detenerVivo()
         pila.removeAt(pila.lastIndex)
+        sincronizarTablero()
         return true
     }
 
@@ -270,7 +284,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun desconectar() {
-        tarea?.cancel(); detenerVivo()
+        tarea?.cancel(); detenerVivo(); detenerTablero()
         transporte?.cerrar()
         transporte = null; elm = null; diag = null; obd = null
         trabajo = null
@@ -292,7 +306,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             return
         }
         if (trabajo != null) return
-        detenerVivo()
+        detenerVivo(); detenerTablero()
         trabajo = Trabajo(titulo, "", null)
         tarea = viewModelScope.launch {
             try {
@@ -312,6 +326,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             } finally {
                 trabajo = null
                 if (pantalla == Pantalla.EnVivo) iniciarVivo()
+                sincronizarTablero()
             }
         }
     }
@@ -405,7 +420,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     fun informe(): String? = resultado?.let { r ->
         // El informe busca los títulos por código: código → título ya traducido al idioma actual
         val titulos = r.modulos.flatMap { m ->
-            m.dtcs.mapNotNull { d -> d.claveGenerica?.let { it to tr(repo.buscar(d, m.categoria, m.nombre).titulo) } }
+            m.dtcs.map { d -> d.codigo to tr(repo.buscar(d, m.categoria, m.nombre).titulo) }
         }.toMap()
         Informe.texto(r, repo, titulos)
     }
@@ -480,6 +495,80 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private fun detenerVivo() {
         tareaVivo?.cancel()
         tareaVivo = null
+    }
+
+    // ── Tableros ─────────────────────────────────────────────────────────────
+    /** Datos para los tableros a pantalla completa (se leen rápido mientras hay un tablero abierto). */
+    var datosTablero by mutableStateOf(DatosTablero()); private set
+    private var inicioViaje = 0L
+
+    /** Segundos desde que se abrió el tablero, contados en el momento (para que el cronómetro corra fluido). */
+    fun segundosTablero(): Float = if (inicioViaje == 0L) 0f else (System.nanoTime() - inicioViaje) / 1e9f
+
+    private fun sincronizarTablero() {
+        val p = pila.last()
+        if (p is Pantalla.Tableros || p is Pantalla.TableroVivo) iniciarTablero() else detenerTablero()
+    }
+
+    private fun iniciarTablero() {
+        val o = obd ?: return
+        if (tareaTablero?.isActive == true || trabajo != null) return
+        tareaTablero = viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val soportados = candado.withLock { o.pidsSoportados() }
+                val rapidos = listOf(0x0C, 0x0D).mapNotNull { Pids.porId(it) }.filter { it.pid in soportados }
+                val lentos = listOf(0x05, 0x2F, 0x42, 0x04, 0x10, 0x11, 0x0B, 0x5C, 0x46, 0x0F, 0x33, 0xA6, 0x31)
+                    .mapNotNull { Pids.porId(it) }.filter { it.pid in soportados }
+                if (inicioViaje == 0L) inicioViaje = System.nanoTime()
+                datosTablero = datosTablero.copy(
+                    marca = marca.nombre, modelo = modelo, tanqueLitros = if (marca.nombre == Auto.MERCEDES) 66f else 55f,
+                )
+                var i = 0
+                var ultimo = System.nanoTime()
+                var vuelta = 0
+                while (isActive) {
+                    val leidos = HashMap<Int, Double>()
+                    for (pid in rapidos) candado.withLock { o.leerPid(pid) }?.let { leidos[pid.pid] = it }
+                    if (lentos.isNotEmpty()) {
+                        val pid = lentos[i++ % lentos.size]
+                        candado.withLock { o.leerPid(pid) }?.let { leidos[pid.pid] = it }
+                    }
+                    var mil: Boolean? = null
+                    if (vuelta++ % 40 == 0) mil = runCatching { candado.withLock { o.estado() }.any { it.testigoEncendido } }.getOrNull()
+                    val ahora = System.nanoTime()
+                    val dt = ((ahora - ultimo) / 1e9f).coerceAtMost(2f)
+                    ultimo = ahora
+                    datosTablero = sumarLectura(datosTablero, leidos, dt, mil)
+                    if (rapidos.isEmpty()) delay(500)
+                }
+            } catch (_: CancellationException) {
+            } catch (ex: Exception) {
+                mensaje = "Se cortó la lectura del tablero: ${ex.message}"
+            }
+        }
+    }
+
+    private fun detenerTablero() {
+        tareaTablero?.cancel()
+        tareaTablero = null
+    }
+
+    private fun sumarLectura(a: DatosTablero, l: Map<Int, Double>, dt: Float, mil: Boolean?): DatosTablero {
+        fun v(pid: Int) = l[pid]?.toFloat()
+        val vel = v(0x0D) ?: a.velocidad
+        val maf = v(0x10) ?: a.maf
+        val litrosHora = maf?.let { it * 3600f / (14.7f * 745f) } ?: 0f
+        return a.copy(
+            rpm = v(0x0C) ?: a.rpm, velocidad = vel,
+            refrigerante = v(0x05) ?: a.refrigerante, nafta = v(0x2F) ?: a.nafta, tension = v(0x42) ?: a.tension,
+            carga = v(0x04) ?: a.carga, maf = maf, mariposa = v(0x11) ?: a.mariposa, multiple = v(0x0B) ?: a.multiple,
+            aceite = v(0x5C) ?: a.aceite, ambiente = v(0x46) ?: a.ambiente, admision = v(0x0F) ?: a.admision,
+            atmosferica = v(0x33) ?: a.atmosferica, odometro = v(0xA6) ?: a.odometro ?: v(0x31),
+            testigoMotor = mil ?: a.testigoMotor,
+            viajeKm = a.viajeKm + vel * dt / 3600f,
+            litrosViaje = a.litrosViaje + litrosHora * dt / 3600f,
+            viajeSeg = segundosTablero(),
+        )
     }
 
     // ── Traducción y explicación con IA ──────────────────────────────────────
@@ -559,6 +648,10 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 appendLine("Dato crudo: ${d.crudoHex} (en formato SAE sería ${d.formatoSae}). Estado: ${d.estado.texto()}.")
                 appendLine("Detalle del módulo: ${m.detalle}.")
                 if (info.fuente == FuenteInfo.CURADA || info.fuente == FuenteInfo.OBDEX) appendLine("Descripción genérica de la norma: ${info.titulo}.")
+                if (info.fuente == FuenteInfo.MARCA) appendLine(
+                    "Según una lista abierta de códigos de ${info.marcaHermana ?: Auto.marcaCorta}" +
+                        (if (info.marcaHermana != null) " (marca del mismo grupo que ${Auto.marcaCorta})" else "") + ": ${info.titulo}."
+                )
                 if (info.mercedes.isNotEmpty()) {
                     appendLine("Según listas del DAS de Mercedes de autos de la misma época (no necesariamente iguales en el W204):")
                     info.mercedes.forEach { appendLine("- ${it.modulo} (${it.origen}): ${it.texto}") }

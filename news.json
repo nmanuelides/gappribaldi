@@ -79,6 +79,14 @@
       "title_en": "New in v0.09.0",
       "body_en": "• Mini opens with the Cooper R53 and its photo.\n• New photos for the Mini Cooper R53, the BMW 535i and the Mercedes C350.\n• Toyota GR Yaris with its photo.",
       "link": null
+    },
+    {
+      "id": "v0.10.0",
+      "title": "Novedades de la v0.10.0",
+      "body": "• Dashboard: con el auto conectado, 10 tableros a pantalla completa con los datos en vivo (vueltas, velocidad, temperaturas, nafta, consumo, viaje y más). Se deslizan para cambiar de uno a otro. Velocidad en km/h, o en mph desde Ajustes.\n• Códigos propios de cada marca: unas 6.700 descripciones de Ford (883), Volkswagen (1.400), Toyota (459), BMW y Mini (312), Chevrolet (3.145) y Honda (173), además de los de Mercedes. Salen de bases abiertas de códigos juntadas por la comunidad.\n• Si un código no está en la lista de tu marca se busca en la de una marca hermana (Mini ← BMW, VW ← Audi, Toyota ← Lexus) y la app lo aclara.\n• Renault todavía no tiene lista propia.",
+      "title_en": "New in v0.10.0",
+      "body_en": "• Dashboard: with the car connected, 10 full-screen dashboards with live data (revs, speed, temperatures, fuel, consumption, trip and more). Swipe to switch between them. Speed in km/h, or mph from Settings.\n• Brand-specific codes: about 6,700 descriptions for Ford (883), Volkswagen (1,400), Toyota (459), BMW and Mini (312), Chevrolet (3,145) and Honda (173), on top of Mercedes. They come from open, community-built code databases.\n• If a code isn't in your brand's list, the app checks a sister brand's list (Mini ← BMW, VW ← Audi, Toyota ← Lexus) and says so.\n• Renault doesn't have its own list yet.",
+      "link": null
     }
   ]
 }

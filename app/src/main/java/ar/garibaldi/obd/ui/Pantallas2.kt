@@ -213,11 +213,12 @@ fun PantallaEnVivo(vm: AppViewModel) {
             Tarjeta {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(pid.nombre, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                    val enMillas = pid.pid == 0x0D && vm.millas
                     Text(
-                        vm.valoresVivo[pid.pid]?.let { Obd2.formatear(it) } ?: "—",
+                        vm.valoresVivo[pid.pid]?.let { Obd2.formatear(if (enMillas) Math.round(it * 0.621371).toDouble() else it) } ?: "—",
                         style = TextStyle(brush = marca.degradeVertical, fontFamily = Titular, fontSize = 32.sp),
                     )
-                    Suave(" " + pid.unidad)
+                    Suave(" " + if (enMillas) "mph" else pid.unidad)
                 }
                 pid.ayuda?.let { Suave(it) }
             }
@@ -404,6 +405,13 @@ fun PantallaAjustes(vm: AppViewModel) {
                 "Los demás módulos se pueden buscar en Módulos → Búsqueda completa, pero sus códigos propios no tienen descripción."
         )
         ElegirModelo(vm)
+        Text("Unidad de velocidad", style = MaterialTheme.typography.titleMedium)
+        FilaBotones {
+            if (vm.millas) BotonOscuro("km/h", Modifier.weight(1f)) { vm.cambiarUnidad(false) }
+            else BotonAcento("km/h", Modifier.weight(1f)) {}
+            if (vm.millas) BotonAcento("mph", Modifier.weight(1f)) {}
+            else BotonOscuro("mph", Modifier.weight(1f)) { vm.cambiarUnidad(true) }
+        }
         FilaBotones {
             BotonOscuro("Elegir foto del auto", Modifier.weight(1f)) {
                 elegirFoto.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))

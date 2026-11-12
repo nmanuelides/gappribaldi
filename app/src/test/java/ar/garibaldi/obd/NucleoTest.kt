@@ -397,3 +397,53 @@ class ListasMercedesTest {
         }
     }
 }
+
+class ListasMarcasTest {
+    private val repo = DtcRepositorio { nombre -> File("src/main/assets/dtc", nombre).takeIf { it.exists() }?.inputStream() }
+
+    private fun motor(hex: String) = DtcDecoder.kwp(hexABytes("58 01 $hex 20"), trenMotriz = true).single()
+
+    private fun con(marca: String, bloque: () -> Unit) {
+        try {
+            Auto.marca = marca
+            bloque()
+        } finally {
+            Auto.marca = Auto.MERCEDES; Auto.modelo = "C350"
+        }
+    }
+
+    @Test
+    fun codigoPropioDeFordSaleDeSuLista() = con("Ford") {
+        val info = repo.buscar(motor("14 50"), Categoria.MOTOR, "Motor")
+        assertEquals(FuenteInfo.MARCA, info.fuente)
+        assertTrue(info.titulo.contains("Fuel Tank Vacuum", ignoreCase = true))
+        assertEquals(null, info.marcaHermana)
+    }
+
+    @Test
+    fun miniUsaLaListaDeBmwYLoAclara() = con("Mini") {
+        val info = repo.buscar(motor("10 83"), Categoria.MOTOR, "Motor")
+        assertEquals(FuenteInfo.MARCA, info.fuente)
+        assertEquals("BMW", info.marcaHermana)
+    }
+
+    @Test
+    fun elMismoCodigoCambiaSegunLaMarca() {
+        var ford = ""
+        var toyota = ""
+        con("Ford") { ford = repo.buscar(motor("13 00"), Categoria.MOTOR, "Motor").titulo }
+        con("Toyota") { toyota = repo.buscar(motor("13 00"), Categoria.MOTOR, "Motor").titulo }
+        assertTrue(toyota.contains("Igniter", ignoreCase = true))
+        assertTrue(ford != toyota)
+    }
+
+    @Test
+    fun sinListaNoSeInventaNada() = con("Renault") {
+        assertEquals(FuenteInfo.NINGUNA, repo.buscar(motor("14 50"), Categoria.MOTOR, "Motor").fuente)
+    }
+
+    @Test
+    fun codigoGenericoSigueConLaBaseDeLaNorma() = con("Ford") {
+        assertTrue(repo.buscar(motor("01 71"), Categoria.MOTOR, "Motor").fuente != FuenteInfo.MARCA)
+    }
+}

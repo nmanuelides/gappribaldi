@@ -45,6 +45,9 @@ object Pids {
         Pid(0x1F, "Tiempo desde el arranque", "s", 2) { it[0] * 256.0 + it[1] },
         Pid(0x21, "Distancia con el testigo encendido", "km", 2) { it[0] * 256.0 + it[1] },
         Pid(0x31, "Distancia desde el último borrado", "km", 2) { it[0] * 256.0 + it[1] },
+        Pid(0x46, "Temperatura exterior", "°C", 1) { it[0] - 40.0 },
+        Pid(0x5C, "Temperatura del aceite", "°C", 1) { it[0] - 40.0 },
+        Pid(0xA6, "Odómetro", "km", 4) { ((it[0].toLong() shl 24) + (it[1] shl 16) + (it[2] shl 8) + it[3]) / 10.0 },
     )
 
     fun porId(pid: Int) = lista.firstOrNull { it.pid == pid }
@@ -111,7 +114,7 @@ class Obd2(private val diag: Diagnostico) {
     suspend fun pidsSoportados(): Set<Int> {
         val soportados = HashSet<Int>()
         var base = 0
-        while (base <= 0x40) {
+        while (base <= 0xA0) {
             val m = diag.obd(byteArrayOf(0x01, base.toByte())).firstOrNull { it.datos.size >= 6 } ?: break
             for (i in 0 until 32) {
                 if (m.datos.u(2 + i / 8) and (0x80 shr (i % 8)) != 0) soportados += base + i + 1
@@ -135,7 +138,7 @@ class Obd2(private val diag: Diagnostico) {
         if (a == 0 && b == 0) return null
         val valores = ArrayList<ValorCongelado>()
         for (pid in Pids.lista) {
-            if (pid.pid !in soportados || pid.pid in setOf(0x1F, 0x21, 0x31, 0x2F, 0x33)) continue
+            if (pid.pid !in soportados || pid.pid in setOf(0x1F, 0x21, 0x31, 0x2F, 0x33, 0x46, 0xA6)) continue
             val r = diag.obd(byteArrayOf(0x02, pid.pid.toByte(), 0x00), 150)
                 .firstOrNull { it.datos.size >= 3 + pid.bytes && it.datos.u(1) == pid.pid } ?: continue
             val v = pid.calc(IntArray(pid.bytes) { r.datos.u(3 + it) })

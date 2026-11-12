@@ -78,6 +78,11 @@ private fun App(vm: AppViewModel) {
     }
     BackHandler(enabled = vm.pila.size > 1) { vm.volver() }
     val pantalla = vm.pantalla
+    // Un tablero ocupa toda la pantalla, sin barra ni fondo de la app
+    if (pantalla is Pantalla.TableroVivo) {
+        ar.garibaldi.obd.ui.dash.PantallaTableroVivo(vm, pantalla.indice)
+        return
+    }
 
     // Mientras trabaja con el auto o muestra datos en vivo, que no se apague la pantalla
     val vista = LocalView.current
@@ -97,6 +102,8 @@ private fun App(vm: AppViewModel) {
                     is Pantalla.Detalle -> PantallaDetalle(vm, pantalla)
                     Pantalla.Modulos -> PantallaModulos(vm)
                     Pantalla.EnVivo -> PantallaEnVivo(vm)
+                    Pantalla.Tableros -> ar.garibaldi.obd.ui.dash.PantallaTableros(vm)
+                    is Pantalla.TableroVivo -> Unit
                     Pantalla.Emisiones -> PantallaEmisiones(vm)
                     Pantalla.Conexion -> PantallaConexion(vm)
                     Pantalla.Registro -> PantallaRegistro(vm)
@@ -123,6 +130,8 @@ private fun BarraSuperior(vm: AppViewModel, pantalla: Pantalla) {
         is Pantalla.Detalle -> "Detalle"
         Pantalla.Modulos -> "Módulos"
         Pantalla.EnVivo -> "Datos en vivo"
+        Pantalla.Tableros -> "Dashboard"
+        is Pantalla.TableroVivo -> "Dashboard"
         Pantalla.Emisiones -> "Emisiones"
         Pantalla.Conexion -> "Conexión"
         Pantalla.Registro -> "Registro"
