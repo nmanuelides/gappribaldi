@@ -103,6 +103,14 @@
       "title_en": "New in v0.12.0",
       "body_en": "• Mercedes codes with no description now show the failure type (open circuit, short to ground, etc.). On lights, an open circuit is usually a burnt bulb or a loose connector.\n• Quick search now finds the C350's lighting and body modules.\n• Full search no longer saves fake modules from late replies.\n• The report shows each module's part number.",
       "link": null
+    },
+    {
+      "id": "v0.13.0",
+      "title": "Novedades de la v0.13.0",
+      "body": "• El resultado del escaneo muestra solo los módulos con códigos; los que están bien quedan en una tarjeta aparte que se abre al tocarla.\n• Cada código trae su descripción en la misma tarjeta, sin tener que abrirlo.\n• El escaneo lee una sola vez la identificación de los módulos que no la tenían, y si el módulo informa su nombre, lo usa.\n• Después de borrar códigos de luces, la app avisa que pueden volver a los pocos minutos si la falla sigue.",
+      "title_en": "New in v0.13.0",
+      "body_en": "• Scan results show only modules with codes; the healthy ones are grouped in a separate card you can tap to open.\n• Each code shows its description right on its card, no need to open it.\n• The scan reads, once, the identification of modules that didn't have it, and uses the module's own name when it reports one.\n• After clearing light codes, the app warns they may come back within minutes if the fault is still there.",
+      "link": null
     }
   ]
 }

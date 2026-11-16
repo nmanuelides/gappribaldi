@@ -18,6 +18,7 @@ import ar.garibaldi.obd.adapter.InfoAdaptador
 import ar.garibaldi.obd.ai.AlmacenClave
 import ar.garibaldi.obd.auto.Auto
 import ar.garibaldi.obd.ai.ClaudeClient
+import ar.garibaldi.obd.dtc.TipoFalla
 import ar.garibaldi.obd.dtc.Dtc
 import ar.garibaldi.obd.dtc.DtcRepositorio
 import ar.garibaldi.obd.dtc.FuenteInfo
@@ -386,6 +387,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             modulos, voltaje,
             progreso = { hecho, total, texto -> avance(titulo, hecho, total, texto) },
             protocoloDetectado = { m, p -> recordarProtocolo(m, p) },
+            identificado = { m -> if (!esDemo) guardarModulos(modulos.map { if (it.idPedido == m.idPedido) m else it }) },
         )
         if (!esDemo) {
             historialStore.guardar(r)
@@ -462,8 +464,12 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 .distinct()
             val extra = if (activos.isEmpty()) "" else "\n\nEstos códigos vuelven solos porque la falla está presente ahora; " +
                 "no se van a poder borrar hasta reparar la causa: " + activos.joinToString()
+            // Las fallas de luces se vuelven a probar al prender cada luz: pueden no aparecer justo después de borrar
+            val habiaLuces = objetivos.any { m -> m.dtcs.any { it.codigo.startsWith("B") && TipoFalla.esDeCircuito(it.tipoFalla) } }
+            val notaLuces = if (!habiaLuces) "" else "\n\nLas fallas de luces el módulo las vuelve a probar cuando se prende cada luz: " +
+                "si la lámpara o el cable siguen mal, el código vuelve a los pocos minutos aunque ahora no aparezca."
             mensaje = (if (fallos.isEmpty()) "Borrado hecho. Abajo está lo que quedó después de volver a leer."
-            else "No se pudo borrar todo:\n" + fallos.joinToString("\n")) + extra
+            else "No se pudo borrar todo:\n" + fallos.joinToString("\n")) + extra + notaLuces
         }
     }
 

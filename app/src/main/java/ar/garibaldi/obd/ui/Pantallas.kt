@@ -67,6 +67,7 @@ import ar.garibaldi.obd.auto.Auto
 import ar.garibaldi.obd.i18n.Idioma
 import ar.garibaldi.obd.dtc.FuenteInfo
 import ar.garibaldi.obd.dtc.Gravedad
+import ar.garibaldi.obd.dtc.TipoFalla
 import ar.garibaldi.obd.modules.Categoria
 import ar.garibaldi.obd.scan.ResultadoEscaneo
 import ar.garibaldi.obd.scan.ResultadoModulo
@@ -419,8 +420,32 @@ fun PantallaResultado(vm: AppViewModel) {
         }
         if (vm.bajandoTraduccion) Tarjeta { FilaCargando("Bajando el paquete de traducción…") }
 
-        for (m in r.modulos) {
+        // Solo se muestran los módulos con códigos; los que están bien van resumidos en una tarjeta
+        for (m in r.modulos.filter { it.dtcs.isNotEmpty() }) {
             TarjetaModulo(vm, m, puedeBorrar) { borrar = m.clave }
+        }
+        val sanos = r.modulos.filter { it.dtcs.isEmpty() && it.error == null }
+        val sinLeer = r.modulos.filter { it.dtcs.isEmpty() && it.error != null }
+        if (sanos.isNotEmpty() || sinLeer.isNotEmpty()) {
+            var verTodos by remember { mutableStateOf(false) }
+            Tarjeta(Modifier.clickable { verTodos = !verTodos }) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            if (sanos.size == 1) "1 módulo sin fallas" else "${sanos.size} módulos sin fallas",
+                            style = MaterialTheme.typography.titleMedium,
+                        )
+                        if (sinLeer.isNotEmpty()) {
+                            Suave(if (sinLeer.size == 1) "1 módulo no se pudo leer" else "${sinLeer.size} módulos no se pudieron leer")
+                        }
+                    }
+                    Etiqueta(if (verTodos) "OCULTAR" else "VER", Tinta.Verde)
+                }
+                if (verTodos) {
+                    sanos.forEach { Suave("✓ ${it.nombre} · ${it.detalle}") }
+                    sinLeer.forEach { Text("${it.nombre}: ${it.error}", style = MaterialTheme.typography.bodySmall, color = Tinta.Amarillo) }
+                }
+            }
         }
 
         if (r.monitoresPendientes.isNotEmpty()) {
@@ -502,9 +527,12 @@ private fun TarjetaModulo(vm: AppViewModel, m: ResultadoModulo, puedeBorrar: Boo
                         if (nuevo) Etiqueta("NUEVO", LocalMarca.current.claro)
                     }
                     Text(
-                        if (info.fuente == FuenteInfo.NINGUNA) "Código propio de ${Auto.marcaCorta} · tocá para ver opciones" else vm.tr(info.titulo),
+                        if (info.fuente == FuenteInfo.NINGUNA && TipoFalla.texto(d.tipoFalla) == null) {
+                            "Código propio de ${Auto.marcaCorta} · tocá para ver opciones"
+                        } else vm.tr(info.titulo),
                         style = MaterialTheme.typography.bodyMedium, color = Tinta.Texto,
                     )
+                    resumenDtc(info)?.let { Suave(vm.tr(it)) }
                     Suave(d.estado.texto())
                 }
                 Text("›", style = MaterialTheme.typography.headlineSmall, color = Tinta.TextoSuave)
@@ -515,6 +543,15 @@ private fun TarjetaModulo(vm: AppViewModel, m: ResultadoModulo, puedeBorrar: Boo
             BotonOscuro("Borrar códigos de este módulo", Modifier.fillMaxWidth(), colorTexto = Tinta.Rojo, alHacerClic = alBorrar)
         }
     }
+}
+
+/** Lo esencial del código para leer en la misma tarjeta, sin tener que abrirlo. */
+private fun resumenDtc(info: ar.garibaldi.obd.dtc.InfoDtc): String? = when {
+    info.fuente == FuenteInfo.NINGUNA -> info.queRevisar.firstOrNull()
+    info.mercedes.size > 1 -> info.mercedes.take(3).joinToString("\n") { "• ${it.modulo}: ${it.texto}" } +
+        if (info.mercedes.size > 3) "\n• y ${info.mercedes.size - 3} más" else ""
+    else -> info.explicacion ?: info.causas.firstOrNull()?.let { "Causa más común: ${it.texto}" }
+        ?: info.queRevisar.firstOrNull()
 }
 
 // ── Detalle de un código ─────────────────────────────────────────────────────

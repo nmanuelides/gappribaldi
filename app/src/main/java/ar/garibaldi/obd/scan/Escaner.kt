@@ -56,6 +56,7 @@ class Escaner(private val diag: Diagnostico, private val obd: Obd2) {
         voltaje: String?,
         progreso: (hecho: Int, total: Int, texto: String) -> Unit,
         protocoloDetectado: (Modulo, Protocolo) -> Unit,
+        identificado: (Modulo) -> Unit = {},
     ): ResultadoEscaneo {
         val total = modulos.size + 1
         progreso(0, total, "Leyendo datos de emisiones (OBD estándar)…")
@@ -75,9 +76,18 @@ class Escaner(private val diag: Diagnostico, private val obd: Obd2) {
                 "Códigos de emisiones que exige la norma OBD-II", porEcu[id].orEmpty(), null,
             )
         }
-        modulos.forEachIndexed { i, m ->
+        modulos.forEachIndexed { i, original ->
             currentCoroutineContext().ensureActive()
-            progreso(i + 1, total, "Leyendo ${m.nombre}…")
+            progreso(i + 1, total, "Leyendo ${original.nombre}…")
+            // Módulos guardados sin identificación (búsquedas viejas): se identifican una sola vez
+            var m = original
+            if (m.identificacion.isEmpty() && !m.trenMotriz) {
+                val ident = diag.identificar(m.idPedido, m.idRespuesta)
+                // Si no contesta nada queda marcado igual, para no volver a preguntarle en cada escaneo
+                val datos = ident.datos.ifEmpty { mapOf("Identificación" to "el módulo no la informa") }
+                m = m.copy(identificacion = datos, protocolo = m.protocolo ?: ident.protocolo).conNombreDeIdentificacion()
+                identificado(m)
+            }
             val lectura = diag.leerDtc(m.idPedido, m.idRespuesta, m.protocolo, m.trenMotriz)
             if (lectura.protocolo != null && lectura.protocolo != m.protocolo) protocoloDetectado(m, lectura.protocolo)
             resultados += ResultadoModulo(
@@ -180,7 +190,7 @@ object Informe {
         r.voltaje?.let { sb.appendLine("Batería: $it") }
         r.testigoMotor?.let { sb.appendLine("Testigo de motor: ${if (it) "ENCENDIDO" else "apagado"}") }
         sb.appendLine("Códigos encontrados: ${r.totalCodigos}")
-        for (m in r.modulos) {
+        for (m in r.modulos.filter { it.dtcs.isNotEmpty() || it.error != null }) {
             sb.appendLine()
             sb.appendLine("■ ${m.nombre}")
             sb.appendLine("  ${m.detalle}")
@@ -197,6 +207,11 @@ object Informe {
                 sb.appendLine("  ${d.codigo} — $titulo")
                 sb.appendLine("     Estado: ${d.estado.texto()} · Gravedad${if (info.gravedadEstimada) " estimada" else ""}: ${info.gravedad.titulo}")
             }
+        }
+        val sanos = r.modulos.filter { it.dtcs.isEmpty() && it.error == null }
+        if (sanos.isNotEmpty()) {
+            sb.appendLine()
+            sb.appendLine("Sin fallas (${sanos.size}): ${sanos.joinToString { it.nombre }}")
         }
         if (r.monitoresPendientes.isNotEmpty()) {
             sb.appendLine()

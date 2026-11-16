@@ -37,6 +37,17 @@ data class Modulo(
     val direccion: String get() = "%03X → %03X".format(idPedido, idRespuesta)
     val trenMotriz: Boolean get() = categoria == Categoria.MOTOR || categoria == Categoria.CAJA
 
+    /**
+     * Si el módulo no tiene nombre y su identificación trae el nombre del sistema (DID F197 o el archivo
+     * de diagnóstico F19E, p. ej. "SAM204"), lo usa. Nunca pisa un nombre que eligió el usuario.
+     */
+    fun conNombreDeIdentificacion(): Modulo {
+        if (nombreConfirmado || categoria != Categoria.DESCONOCIDO) return this
+        val texto = identificacion.entries.firstOrNull { "F1 97" in it.key || "F1 9E" in it.key }?.value
+            ?.substringBefore("[")?.trim()?.takeIf { t -> t.count { it.isLetter() } >= 3 } ?: return this
+        return copy(nombre = "%s (%03X)".format(texto, idPedido))
+    }
+
     /** Número de parte leído en la identificación (10 dígitos en Mercedes), para el informe. */
     fun numeroDeParte(): String? = identificacion.values.firstNotNullOfOrNull {
         Regex("(?<![0-9A-F])[A-Z]?[0-9]{10}(?![0-9])").find(it.substringBefore("[").trim())?.value
@@ -212,7 +223,7 @@ class Descubridor(private val diag: Diagnostico, private val log: FrameLog) {
             encontrados += base.copy(
                 protocolo = ident.protocolo ?: base.protocolo,
                 identificacion = ident.datos.ifEmpty { base.identificacion },
-            )
+            ).conNombreDeIdentificacion()
         }
         progreso(candidatos.size, candidatos.size, encontrados.size)
         return encontrados

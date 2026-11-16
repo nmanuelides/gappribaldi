@@ -110,7 +110,8 @@ class Diagnostico(private val elm: Elm327) {
             }
         }
         if (datos.isEmpty()) {
-            for ((did, nombre) in listOf(0x11 to "Hardware", 0x21 to "Software", 0x00 to "Variante")) {
+            // F197: nombre del sistema; F19E: nombre del archivo de diagnóstico (en algunos módulos dice qué son)
+            for ((did, nombre) in listOf(0x11 to "Hardware", 0x21 to "Software", 0x00 to "Variante", 0x97 to "Sistema", 0x9E to "Archivo")) {
                 when (val r = fisico(idPedido, idRespuesta, byteArrayOf(0x22, 0xF1.toByte(), did.toByte()), 300)) {
                     is DiagResultado.Positiva -> {
                         protocolo = Protocolo.UDS
