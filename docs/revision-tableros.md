@@ -1,6 +1,7 @@
 # Revisión de tableros contra su imagen de referencia
 
-Proceso armado a partir de las correcciones del tablero **Híbrido azul** (el primero que se pulió a mano).
+Proceso armado a partir de las correcciones del tablero **Híbrido azul** (el primero que se pulió a mano) y
+de la segunda ronda sobre el resto (Roadster LCD, M Sport, Gran turismo, Cabina virtual, Todoterreno, Clásico).
 Cada punto sale de algo que se marcó como distinto a la referencia. Se aplica a cada tablero, uno por uno,
 antes de darlo por terminado.
 
@@ -19,7 +20,10 @@ mismas coordenadas que usa el código: la imagen escalada a 2000 px de ancho).
 ## 1. Geometría
 
 - Una barra o banda mantiene **el mismo grosor y alto en todo su recorrido**, incluidas sus partes finales
-  (zona roja, último tramo).
+  (zona roja, último tramo): no arranca finita y engorda. Las rayas o bloques del final **siguen la misma
+  curvatura** que el resto y llegan a los mismos bordes de arriba y abajo.
+- Un medidor semicircular es un **semicírculo**: arranca y termina en horizontal (0° y 180°), no "en ángulo".
+  Si en la foto los extremos se ven inclinados, es la perspectiva.
 - Los arcos son **círculos perfectos** (semicírculos, anillos). Una foto en perspectiva no se copia como
   elipse.
 - **Muchas referencias son fotos sacadas de costado o desde abajo.** Se reconstruye la vista de frente: si hay dos relojes,
@@ -27,6 +31,8 @@ mismas coordenadas que usa el código: la imagen escalada a 2000 px de ancho).
   centro "corrido" es el ángulo de la foto) y los elementos a los costados son simétricos.
 - **Las partes físicas del auto no son interfaz**: el volante, las levas, sus luces, el marco del tablero o
   reflejos. Si en la foto tapan algo, se dibuja lo que hay detrás.
+- **Lo que la referencia muestra detrás de otros elementos sigue detrás**: un mapa o fondo que pasa por atrás
+  de los relojes no se corta en un rectángulo al lado de ellos.
 - El brillo de una foto engaña: reflejos y luz ambiente aclaran el fondo. Si el fondo del tablero se ve gris o
   marrón por el reflejo, en realidad es **casi negro**.
 - Las agujas y marcadores salen **del centro exacto** del arco y apuntan a las rayas.
@@ -50,6 +56,14 @@ mismas coordenadas que usa el código: la imagen escalada a 2000 px de ancho).
 - La iluminación suele venir de un costado: el degradé de la cara de atrás **cambia con el ángulo** (de un
   lado oscuro→claro, del otro claro→oscuro). Se dibuja en tajadas finas, cada una con su degradé.
 - Las divisiones pueden **seguir hacia adentro** desvaneciéndose.
+- **Bezels de metal**: cuando un reloj tiene aro de metal, se dibuja esqueumórfico (degradé de giro con
+  reflejos claros y oscuros, canto interior y exterior, sombra que proyecta sobre el fondo), no un trazo gris.
+
+## 3b. Familia del diseño
+
+- Identificar **de qué marca o familia** es cada referencia. Tableros de la misma familia comparten lenguaje
+  visual (por ejemplo, M Sport y Híbrido azul son ambos Lexus: el mismo volumen 3D en las secciones, en otro
+  color). Reusar la solución que ya se aprobó en el hermano en lugar de inventar otra.
 
 ## 4. Degradés y colores
 
@@ -69,6 +83,8 @@ mismas coordenadas que usa el código: la imagen escalada a 2000 px de ancho).
 
 - Ningún texto pisa otro elemento (aros, bandas, barras, otros textos).
 - Los cortes de un aro para dejar lugar a un texto se calculan con el **ancho real** del texto, con margen.
+- Pasar por **todos** los textos y elementos chicos de la zona: en un tablero denso (Roadster LCD) hay muchos
+  cruces a la vez; no corregir solo el que se señaló.
 - Revisar en especial: unidades sobre aros, números en la parte de abajo de un reloj (cerca de barras),
   textos de dos tamaños en el mismo renglón.
 

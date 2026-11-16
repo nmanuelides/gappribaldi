@@ -74,6 +74,20 @@ class Diagnostico(private val elm: Elm327) {
     }
 
     /**
+     * Modo 04 (borrar códigos OBD) devolviendo también los rechazos: cuántos módulos lo aceptaron y los códigos
+     * de rechazo (NRC) de los que no. Con el motor en marcha muchos autos contestan 7F 04 22.
+     */
+    suspend fun obdBorrado(): Pair<Int, List<Int>> {
+        val pedido = byteArrayOf(0x04)
+        SafetyGuard.verificar(pedido, true)
+        val r = elm.enviarFuncionalObd(pedido.hex(), 1000)
+        val msgs = IsoTp.reensamblar(r.tramas).filter { it.id in 0x7E8..0x7EF && it.datos.isNotEmpty() }
+        val ok = msgs.count { it.datos.u(0) == 0x44 }
+        val nrcs = msgs.filter { it.datos.size >= 3 && it.datos.u(0) == 0x7F && it.datos.u(1) == 0x04 }.map { it.datos.u(2) }
+        return ok to nrcs
+    }
+
+    /**
      * Averigua qué "idioma" habla el módulo y lee lo que se pueda de su identificación.
      * Solo usa pedidos de lectura inofensivos.
      */

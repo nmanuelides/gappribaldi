@@ -87,6 +87,14 @@
       "title_en": "New in v0.10.0",
       "body_en": "• Dashboard: with the car connected, 10 full-screen dashboards with live data (revs, speed, temperatures, fuel, consumption, trip and more). Swipe to switch between them. Speed in km/h, or mph from Settings.\n• Brand-specific codes: about 6,700 descriptions for Ford (883), Volkswagen (1,400), Toyota (459), BMW and Mini (312), Chevrolet (3,145) and Honda (173), on top of Mercedes. They come from open, community-built code databases.\n• If a code isn't in your brand's list, the app checks a sister brand's list (Mini ← BMW, VW ← Audi, Toyota ← Lexus) and says so.\n• Renault doesn't have its own list yet.",
       "link": null
+    },
+    {
+      "id": "v0.11.0",
+      "title": "Novedades de la v0.11.0",
+      "body": "• Códigos del Mercedes con ficha en español: sensores de rueda y ejes del ESP, red CAN del chasis en el gateway, sensor de temperatura exterior y sensor de rango de la caja, con la fuente de cada texto (boletines de Daimler y listas del DAS).\n• Al borrar: si el auto lo rechaza porque el motor está en marcha, la app te avisa que lo apagues y dejes el contacto puesto.\n• Después de borrar, la app te dice qué códigos vuelven solos porque la falla está presente ahora.\n• Los códigos que un módulo informa repetidos se muestran una sola vez.",
+      "title_en": "New in v0.11.0",
+      "body_en": "• Mercedes codes with their own entries: ESP wheel and axle speed sensors, chassis CAN on the gateway, outside temperature sensor and transmission range sensor, with the source of each text (Daimler service bulletins and DAS lists).\n• When clearing: if the car refuses because the engine is running, the app tells you to turn it off and leave the ignition on.\n• After clearing, the app tells you which codes come back on their own because the fault is present right now.\n• Codes a module reports twice are shown only once.",
+      "link": null
     }
   ]
 }

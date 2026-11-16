@@ -4,6 +4,7 @@ import ar.garibaldi.obd.dtc.Dtc
 import ar.garibaldi.obd.dtc.DtcDecoder
 import ar.garibaldi.obd.dtc.OrigenDtc
 import ar.garibaldi.obd.protocol.Diagnostico
+import ar.garibaldi.obd.protocol.Nrc
 import ar.garibaldi.obd.protocol.u
 
 /** Un dato en vivo del modo 01. [calc] recibe los bytes de datos (A, B, ...). */
@@ -102,7 +103,18 @@ class Obd2(private val diag: Diagnostico) {
     }
 
     /** Modo 04: borra códigos y datos de emisiones en todos los módulos OBD. */
-    suspend fun borrar(): Boolean = diag.obd(byteArrayOf(0x04), 1000, borradoConfirmado = true).isNotEmpty()
+    suspend fun borrar(): Boolean = borrarConMotivo() == null
+
+    /** Como [borrar], pero devuelve por qué no se pudo (null si se borró). */
+    suspend fun borrarConMotivo(): String? {
+        val (ok, nrcs) = diag.obdBorrado()
+        return when {
+            ok > 0 && nrcs.isEmpty() -> null
+            0x22 in nrcs -> "el auto lo rechazó porque el motor está en marcha. Apagá el motor, dejá el contacto puesto (sin arrancar) y probá de nuevo"
+            nrcs.isNotEmpty() -> "el auto lo rechazó: " + nrcs.distinct().joinToString { Nrc.texto(it) }
+            else -> "el auto no confirmó el borrado"
+        }
+    }
 
     /** Modo 09 PID 02: número de chasis (VIN). */
     suspend fun vin(): String? {

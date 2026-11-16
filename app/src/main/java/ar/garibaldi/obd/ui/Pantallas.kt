@@ -595,9 +595,10 @@ fun PantallaDetalle(vm: AppViewModel, p: Pantalla.Detalle) {
         }
         if (info.queRevisar.isNotEmpty()) {
             Seccion("Qué revisar")
-            info.queRevisar.forEach { Text("• $it", style = MaterialTheme.typography.bodyMedium) }
+            info.queRevisar.forEach { Text("• " + vm.tr(it), style = MaterialTheme.typography.bodyMedium) }
         }
         when {
+            info.fuenteTexto != null -> Suave("Ficha propia de ${Auto.marcaCorta} en español. Fuente: ${info.fuenteTexto}.")
             info.fuente == FuenteInfo.OBDEX && vm.tr(info.titulo) != info.titulo ->
                 Suave("Traducción automática de la base abierta OBDex: puede tener errores. Título original: ${info.titulo}")
             info.fuente == FuenteInfo.OBDEX -> Suave("Descripción en inglés de la base abierta OBDex.")

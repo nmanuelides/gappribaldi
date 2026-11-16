@@ -445,7 +445,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             val objetivos = r.modulos.filter { clave == null || it.clave == clave }
             if (objetivos.any { it.esObd }) {
                 avance(titulo, 0, 0, "Borrando códigos de emisiones (OBD)…")
-                if (!o.borrar()) fallos += "OBD estándar: el auto no confirmó el borrado"
+                o.borrarConMotivo()?.let { fallos += "OBD estándar: $it" }
             }
             for (rm in objetivos.filter { !it.esObd && (it.dtcs.isNotEmpty() || clave != null) }) {
                 val m = modulos.firstOrNull { it.idPedido == rm.idPedido } ?: continue
@@ -455,8 +455,15 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             }
             delay(800) // les damos un respiro a los módulos antes de releer
             hacerEscaneo(d, o, e)
-            mensaje = if (fallos.isEmpty()) "Borrado hecho. Abajo está lo que quedó después de volver a leer."
-            else "No se pudo borrar todo:\n" + fallos.joinToString("\n")
+            // Los que siguen "presente ahora" vuelven solos: la falla está activa y hay que repararla
+            val activos = resultado?.modulos.orEmpty()
+                .filter { clave == null || it.clave == clave }
+                .flatMap { m -> m.dtcs.filter { it.estado.actual }.map { "${it.codigo} (${m.nombre})" } }
+                .distinct()
+            val extra = if (activos.isEmpty()) "" else "\n\nEstos códigos vuelven solos porque la falla está presente ahora; " +
+                "no se van a poder borrar hasta reparar la causa: " + activos.joinToString()
+            mensaje = (if (fallos.isEmpty()) "Borrado hecho. Abajo está lo que quedó después de volver a leer."
+            else "No se pudo borrar todo:\n" + fallos.joinToString("\n")) + extra
         }
     }
 

@@ -384,6 +384,27 @@ class ListasMercedesTest {
         assertTrue(info.mercedes.single().texto.contains("camshaft", ignoreCase = true))
     }
 
+    /** Lo que contestó el ESP del C350 real (sesión del 16/11/2026): 8 códigos, todos guardados. */
+    @Test
+    fun espDelC350RealTieneFichaEnEspanol() {
+        val datos = hexABytes("58 08 72 66 20 51 32 20 51 12 20 51 02 20 72 71 20 72 70 20 60 00 20 62 65 20")
+        val dtcs = DtcDecoder.kwp(datos, trenMotriz = false)
+        assertEquals(listOf("7266", "5132", "5112", "5102", "7271", "7270", "6000", "6265"), dtcs.map { it.codigo })
+        val info = repo.buscar(dtcs[2], Categoria.FRENOS, "Frenos / ESP (probable)")
+        assertEquals(FuenteInfo.CURADA, info.fuente)
+        assertTrue(info.titulo.contains("delantera derecha"))
+        assertTrue(info.fuenteTexto!!.contains("Daimler"))
+    }
+
+    @Test
+    fun gatewayRepetidoSeMuestraUnaVezConFicha() {
+        // 59 02 7B y dos veces D0 27 00 (U102700) con distinto estado
+        val dtcs = DtcDecoder.uds(hexABytes("59 02 7B D0 27 00 28 D0 27 00 29"))
+        assertEquals("U102700", dtcs.single().codigo)
+        val info = repo.buscar(dtcs.single(), Categoria.OTRO, "Gateway central (CGW) (probable)")
+        assertTrue(info.titulo.contains("CAN del chasis"))
+    }
+
     @Test
     fun otrasMarcasNoUsanLasListasDeMercedes() {
         try {

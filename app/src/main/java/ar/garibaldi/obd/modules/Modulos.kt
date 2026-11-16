@@ -72,6 +72,7 @@ object CatalogoModulos {
     private val sugeridosMercedes = mapOf(
         0x7E0 to ("Motor (ME 9.7)" to Categoria.MOTOR),
         0x7E1 to ("Caja automática (7G-Tronic)" to Categoria.CAJA),
+        0x602 to ("Gateway central (CGW)" to Categoria.OTRO),
         0x612 to ("Llave y arranque (EZS)" to Categoria.ARRANQUE),
         0x632 to ("Frenos / ESP" to Categoria.FRENOS),
     )
@@ -86,6 +87,7 @@ object CatalogoModulos {
         "Airbag (SRS)" to Categoria.AIRBAG,
         "Llave y arranque (EZS)" to Categoria.ARRANQUE,
         "Traba de dirección (ELV)" to Categoria.ARRANQUE,
+        "Gateway central (CGW)" to Categoria.OTRO,
         "SAM delantero (luces y fusibles)" to Categoria.CARROCERIA,
         "SAM trasero" to Categoria.CARROCERIA,
         "Tablero de instrumentos" to Categoria.TABLERO,

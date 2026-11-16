@@ -114,6 +114,13 @@ private val DICCIONARIO: List<Pair<String, String>> = listOf(
     "Borrando códigos" to "Clearing codes",
     "Borrando códigos de emisiones (OBD)…" to "Clearing emissions codes (OBD)…",
     "OBD estándar: el auto no confirmó el borrado" to "Standard OBD: the car didn't confirm the clear",
+    "OBD estándar: el auto lo rechazó porque el motor está en marcha. Apagá el motor, dejá el contacto puesto (sin arrancar) y probá de nuevo" to
+        "Standard OBD: the car refused because the engine is running. Turn the engine off, leave the ignition on (without starting) and try again",
+    "OBD estándar: el auto lo rechazó: {}" to "Standard OBD: the car refused: {}",
+    "Estos códigos vuelven solos porque la falla está presente ahora; no se van a poder borrar hasta reparar la causa: {}" to
+        "These codes come back on their own because the fault is present right now; they can't be cleared until the cause is fixed: {}",
+    "Ficha propia de {} en español. Fuente: {}." to "{}-specific entry written for this app (shown translated). Source: {}.",
+    "Gateway central (CGW)" to "Central gateway (CGW)",
     "Borrando {}…" to "Clearing {}…",
     "Borrado hecho. Abajo está lo que quedó después de volver a leer." to "Codes cleared. Below is what remained after reading again.",
     "No se pudo borrar todo:" to "Couldn't clear everything:",

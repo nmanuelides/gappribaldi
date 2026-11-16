@@ -1,0 +1,108 @@
+{
+  "_info": "Fichas en español de códigos propios de Mercedes, por lista de módulo (mismas claves que mercedes.json.gz: los 4 primeros dígitos hex del código crudo). t título, e explicación, c causas, r qué revisar, g gravedad, f fuente.",
+  "esp": {
+    "5102": {
+      "t": "Sensor de velocidad de la rueda delantera izquierda (L6/1): señal no plausible",
+      "e": "El ESP compara todo el tiempo la velocidad de las cuatro ruedas. Esta rueda informó una velocidad que no cuadra con las otras.",
+      "c": ["Sensor sucio (viruta, óxido) o dañado", "Juego o desgaste del rodamiento de la rueda: el anillo que lee el sensor está en el rodamiento", "Cable o ficha del sensor dañados", "Tensión baja de batería al arrancar: puede dejar varios de estos códigos a la vez"],
+      "r": ["Si aparece junto con otros sensores de rueda y no vuelve después de borrarlo, fue un evento puntual (batería baja, rueda patinando, auto levantado con el motor en marcha)", "Si vuelve: revisar la ficha y el cable del sensor, medir el sensor y controlar el juego del rodamiento"],
+      "g": "amarillo",
+      "f": "Boletín de servicio de Daimler LI42.45-P-051202"
+    },
+    "5112": {
+      "t": "Sensor de velocidad de la rueda delantera derecha (L6/2): señal no plausible",
+      "e": "El ESP compara todo el tiempo la velocidad de las cuatro ruedas. Esta rueda informó una velocidad que no cuadra con las otras.",
+      "c": ["Sensor sucio (viruta, óxido) o dañado", "Juego o desgaste del rodamiento de la rueda: el anillo que lee el sensor está en el rodamiento", "Cable o ficha del sensor dañados", "Tensión baja de batería al arrancar: puede dejar varios de estos códigos a la vez"],
+      "r": ["Si aparece junto con otros sensores de rueda y no vuelve después de borrarlo, fue un evento puntual (batería baja, rueda patinando, auto levantado con el motor en marcha)", "Si vuelve: revisar la ficha y el cable del sensor, medir el sensor y controlar el juego del rodamiento"],
+      "g": "amarillo",
+      "f": "Boletín de servicio de Daimler LI42.45-P-051202"
+    },
+    "5122": {
+      "t": "Sensor de velocidad de la rueda trasera izquierda (L6/3): señal no plausible",
+      "e": "El ESP compara todo el tiempo la velocidad de las cuatro ruedas. Esta rueda informó una velocidad que no cuadra con las otras.",
+      "c": ["Sensor sucio (viruta, óxido) o dañado", "Juego o desgaste del rodamiento de la rueda: el anillo que lee el sensor está en el rodamiento", "Cable o ficha del sensor dañados", "Tensión baja de batería al arrancar: puede dejar varios de estos códigos a la vez"],
+      "r": ["Si aparece junto con otros sensores de rueda y no vuelve después de borrarlo, fue un evento puntual (batería baja, rueda patinando, auto levantado con el motor en marcha)", "Si vuelve: revisar la ficha y el cable del sensor, medir el sensor y controlar el juego del rodamiento"],
+      "g": "amarillo",
+      "f": "Boletín de servicio de Daimler LI42.45-P-051202"
+    },
+    "5132": {
+      "t": "Sensor de velocidad de la rueda trasera derecha (L6/4): señal no plausible",
+      "e": "El ESP compara todo el tiempo la velocidad de las cuatro ruedas. Esta rueda informó una velocidad que no cuadra con las otras.",
+      "c": ["Sensor sucio (viruta, óxido) o dañado", "Juego o desgaste del rodamiento de la rueda: el anillo que lee el sensor está en el rodamiento", "Cable o ficha del sensor dañados", "Tensión baja de batería al arrancar: puede dejar varios de estos códigos a la vez"],
+      "r": ["Si aparece junto con otros sensores de rueda y no vuelve después de borrarlo, fue un evento puntual (batería baja, rueda patinando, auto levantado con el motor en marcha)", "Si vuelve: revisar la ficha y el cable del sensor, medir el sensor y controlar el juego del rodamiento"],
+      "g": "amarillo",
+      "f": "Boletín de servicio de Daimler LI42.45-P-051202"
+    },
+    "7270": {
+      "t": "Valores no plausibles de los sensores de velocidad del eje trasero",
+      "e": "Las dos ruedas traseras informaron velocidades que no tienen sentido entre sí o con las delanteras.",
+      "c": ["Algún sensor de rueda trasero sucio o dañado", "Rodamiento trasero con juego", "Ruedas de distinto tamaño o una goma muy baja", "Tensión baja de batería al arrancar"],
+      "r": ["Mirar si también hay códigos de un sensor de rueda en particular (5122, 5132): ese es el sospechoso", "Controlar la presión y la medida de las cuatro gomas"],
+      "g": "amarillo",
+      "f": "Boletín de servicio de Daimler LI42.45-P-051202"
+    },
+    "7271": {
+      "t": "Valores no plausibles de los sensores de velocidad del eje delantero",
+      "e": "Las dos ruedas delanteras informaron velocidades que no tienen sentido entre sí o con las traseras.",
+      "c": ["Algún sensor de rueda delantero sucio o dañado", "Rodamiento delantero con juego", "Ruedas de distinto tamaño o una goma muy baja", "Tensión baja de batería al arrancar"],
+      "r": ["Mirar si también hay códigos de un sensor de rueda en particular (5102, 5112): ese es el sospechoso", "Controlar la presión y la medida de las cuatro gomas"],
+      "g": "amarillo",
+      "f": "Boletín de servicio de Daimler LI42.45-P-051202"
+    },
+    "5995": {
+      "t": "Temperatura de los frenos de servicio",
+      "e": "El ESP calcula la temperatura de los frenos y registró que se recalentaron (por ejemplo, frenando mucho en bajada).",
+      "c": ["Uso intenso de los frenos", "Freno que queda frenando (pinza trabada)"],
+      "r": ["Si no hubo un uso intenso, revisar que ninguna rueda quede más caliente que las otras después de andar"],
+      "g": "verde",
+      "f": "Boletín de servicio de Daimler LI42.45-P-051202"
+    },
+    "7266": {
+      "t": "Falla consecuente del ESP",
+      "e": "No es una falla en sí: el ESP la registra como consecuencia de otra falla que tiene guardada al mismo tiempo.",
+      "c": ["Otra falla del ESP (por ejemplo, los sensores de rueda que aparecen junto a esta)"],
+      "r": ["Resolver primero los otros códigos del ESP; esta se va con ellos"],
+      "g": "verde",
+      "f": "Foros de dueños del W204 (no figura en un boletín oficial)",
+      "w": 1
+    }
+  },
+  "cgw": {
+    "D027": {
+      "t": "Red CAN del chasis apagada (bus OFF)",
+      "e": "El gateway (la computadora que une todas las redes del auto) dejó de ver la red del chasis, la que conecta ESP, dirección, motor y tablero. Mientras pasa, aparecen avisos de ESP, ABS o dirección en el tablero y otros módulos guardan fallas de comunicación.",
+      "c": ["Tensión baja o caída de tensión al arrancar (batería débil)", "Cable de la red CAN cortado, en corto o con una ficha floja o sulfatada", "Un módulo del chasis que traba la red: Daimler tiene un boletín por el software de la dirección eléctrica en autos con dirección directa"],
+      "r": ["Cargar o probar la batería: con el motor apagado tiene que dar unos 12,6 V", "Si queda \"presente ahora\" después de borrarlo, la red tiene un problema real: conviene un taller con Xentry para ver qué módulo se cae de la red", "Revisar si hay agua o sulfato en las fichas de la zona de los pies y del baúl"],
+      "g": "amarillo",
+      "f": "Boletín de servicio de Daimler LI46.35-P-055485 (lista de códigos del gateway CGW_204)"
+    }
+  },
+  "motor": {
+    "0073": {
+      "t": "Sensor de temperatura exterior (B14): corto a positivo",
+      "e": "El sensor que mide la temperatura de afuera (el que se ve en el tablero) da una señal fuera de rango, como si estuviera en corto con el positivo.",
+      "c": ["Sensor B14 dañado (está detrás de la parrilla o en un espejo, expuesto a golpes y agua)", "Cable o ficha del sensor dañados o sulfatados"],
+      "r": ["Ver si el tablero muestra una temperatura exterior absurda o con rayas", "Revisar la ficha del sensor"],
+      "g": "verde",
+      "f": "Lista del DAS de Mercedes para el ME 9.7"
+    },
+    "2269": {
+      "t": "Número propio del ME 9.7 sin descripción confirmada",
+      "e": "Este número no está en la lista del DAS que tiene la app. Ojo: el significado genérico de P2269 (agua en el combustible) es de motores diésel y no aplica a un motor nafta como el del C350.",
+      "c": [],
+      "r": ["Si vuelve a aparecer después de borrarlo, conviene leerlo con Xentry para tener el texto exacto"],
+      "g": "verde",
+      "f": "Gappribaldi"
+    }
+  },
+  "caja": {
+    "0705": {
+      "t": "Sensor de rango de la caja (Y3/8s1) defectuoso",
+      "e": "La caja 7G-Tronic no puede leer con seguridad en qué posición está (P, R, N, D). El sensor está dentro de la unidad electrohidráulica de la caja, junto con la computadora de la caja.",
+      "c": ["Sensor de rango o placa conductora de la unidad electrohidráulica (falla conocida de la 722.9)", "Aceite de caja que sube por el cableado desde el conector de 13 pines de la caja", "Cableado o ficha de la caja dañados"],
+      "r": ["Si figura como \"presente ahora\", la falla está activa y no se va a poder borrar hasta repararla", "Revisar si el conector de la caja pierde aceite", "Fijarse si el auto a veces no muestra la marcha o no deja sacar de P"],
+      "g": "amarillo",
+      "f": "Lista del DAS de Mercedes para la 722.9"
+    }
+  }
+}

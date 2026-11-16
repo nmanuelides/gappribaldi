@@ -108,6 +108,7 @@ object DtcDecoder {
             )
             val sae = sae(a, b)
             val hex = "%02X%02X".format(a, b)
+            if (salida.any { it.crudoHex == hex }) continue // algunos módulos repiten el mismo código
             salida += Dtc(
                 codigo = if (trenMotriz) sae else hex,
                 crudoHex = hex,
@@ -144,6 +145,7 @@ object DtcDecoder {
                 byteCrudo = st,
             )
             val sae = sae(a, b)
+            if (salida.any { it.crudoHex == "%02X%02X%02X".format(a, b, ftb) }) continue // repetido
             salida += Dtc(
                 codigo = "%s%02X".format(sae, ftb),
                 crudoHex = "%02X%02X%02X".format(a, b, ftb),

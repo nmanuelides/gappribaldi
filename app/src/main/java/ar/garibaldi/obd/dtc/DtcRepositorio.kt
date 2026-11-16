@@ -59,6 +59,8 @@ data class InfoDtc(
     val mercedes: List<TextoMercedes> = emptyList(),
     /** Con [FuenteInfo.MARCA]: la marca hermana de cuya lista sale el texto (null si es de la propia marca). */
     val marcaHermana: String? = null,
+    /** De dónde sale una ficha propia de Mercedes en español (boletín de Daimler, lista del DAS, foros). */
+    val fuenteTexto: String? = null,
 )
 
 /**
@@ -98,6 +100,31 @@ class DtcRepositorio(private val abrir: (String) -> InputStream?) {
         }
     }
 
+    /** Fichas en español de códigos propios de Mercedes, por lista de módulo (assets/dtc/mercedes_es.json). */
+    private val fichasMercedes: JSONObject by lazy {
+        try {
+            abrir("mercedes_es.json")?.use { JSONObject(it.readBytes().toString(Charsets.UTF_8)) } ?: JSONObject()
+        } catch (_: Exception) {
+            JSONObject()
+        }
+    }
+
+    private fun fichaMercedes(dtc: Dtc, categoria: Categoria, modulo: String): InfoDtc? {
+        if (!Auto.esMercedes) return null
+        val clave = dtc.crudoHex.take(4).uppercase()
+        val c = familiasDe(categoria, modulo).firstNotNullOfOrNull { fichasMercedes.optJSONObject(it)?.optJSONObject(clave) }
+            ?: return null
+        val info = deCurada(c, null)
+        val textos = listOf(info.titulo) + listOfNotNull(info.explicacion) + info.causas.map { it.texto } + info.queRevisar
+        return info.copy(
+            notaMotor = null,
+            gravedadEstimada = c.optInt("w") == 1,
+            fuenteTexto = c.optString("f").ifEmpty { null },
+            enIngles = false,
+            ajenos = if (Idioma.ingles) textos else emptyList(),
+        )
+    }
+
     private val listasMarcas: JSONObject by lazy {
         try {
             abrir("marcas.json.gz")?.use { JSONObject(GZIPInputStream(it).readBytes().toString(Charsets.UTF_8)) }
@@ -127,6 +154,7 @@ class DtcRepositorio(private val abrir: (String) -> InputStream?) {
             categoria == Categoria.CAJA -> listOf("caja")
             categoria == Categoria.AIRBAG -> listOf("airbag")
             categoria == Categoria.ARRANQUE && "elv" !in n && "traba" !in n -> listOf("ezs")
+            "gateway" in n -> listOf("cgw")
             "sam delantero" in n -> listOf("sam_del")
             "sam trasero" in n -> listOf("sam_tras")
             "columna" in n -> listOf("columna")
@@ -156,6 +184,10 @@ class DtcRepositorio(private val abrir: (String) -> InputStream?) {
     fun buscar(dtc: Dtc, categoria: Categoria, modulo: String = ""): InfoDtc {
         val base = buscarBase(dtc, categoria)
         val mb = textosMercedes(dtc, categoria, modulo)
+        // Ficha propia en español: manda sobre la genérica; el texto del DAS queda como dato extra
+        fichaMercedes(dtc, categoria, modulo)?.let { f ->
+            return f.copy(mercedes = mb, ajenos = f.ajenos + if (Idioma.ingles) emptyList() else mb.map { it.texto })
+        }
         if (mb.isEmpty()) {
             if (base.fuente != FuenteInfo.NINGUNA) return base
             val t = textoMarca(dtc) ?: return base
@@ -277,7 +309,7 @@ class DtcRepositorio(private val abrir: (String) -> InputStream?) {
 
         /** Listas que se revisan cuando no se sabe qué módulo es (no se incluyen motor ni caja). */
         private val FAMILIAS_CARROCERIA = listOf(
-            "esp", "airbag", "ezs", "sam_del", "sam_tras", "tablero", "clima", "columna", "techo", "comand", "teleaid", "distronic",
+            "esp", "cgw", "airbag", "ezs", "sam_del", "sam_tras", "tablero", "clima", "columna", "techo", "comand", "teleaid", "distronic",
         )
 
         private fun JSONArray?.textos(): List<String> =
