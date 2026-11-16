@@ -36,6 +36,11 @@ data class Modulo(
 ) {
     val direccion: String get() = "%03X → %03X".format(idPedido, idRespuesta)
     val trenMotriz: Boolean get() = categoria == Categoria.MOTOR || categoria == Categoria.CAJA
+
+    /** Número de parte leído en la identificación (10 dígitos en Mercedes), para el informe. */
+    fun numeroDeParte(): String? = identificacion.values.firstNotNullOfOrNull {
+        Regex("(?<![0-9A-F])[A-Z]?[0-9]{10}(?![0-9])").find(it.substringBefore("[").trim())?.value
+    }
 }
 
 /**
@@ -112,7 +117,11 @@ object CatalogoModulos {
 
     /** Candidatos del escaneo rápido: pares OBD estándar y, en el Mercedes, el esquema de Daimler. */
     fun candidatosRapidos(): List<Int> =
-        (0x7E0..0x7E7).toList() + if (Auto.esMercedes) (0..0x1F).map { 0x602 + it * 0x10 } else emptyList()
+        (0x7E0..0x7E7).toList() + if (Auto.esMercedes) {
+            // Dos esquemas que contestaron en un W204 real: 0x602 + 8·k (gateway, EZS, ESP…)
+            // y 0x693 + 8·k (luces y carrocería: ahí estaban los códigos de luces)
+            (0..0x3F).map { 0x602 + it * 8 } + (0..0x2C).map { 0x693 + it * 8 }
+        } else emptyList()
 
     /**
      * Escaneo completo. Se saltean los IDs funcionales (7DF, 441: le hablan a todos a la vez)
@@ -189,6 +198,12 @@ class Descubridor(private val diag: Diagnostico, private val log: FrameLog) {
             if (id in idsDeRespuesta) return@forEachIndexed // ahí transmite un módulo: no le escribimos encima
             val espera = if (completo && id !in CatalogoModulos.candidatosRapidos()) 80 else 150
             val idResp = sondear(id, espera) ?: return@forEachIndexed
+            // Una respuesta tardía del módulo anterior puede llegar mientras probamos esta dirección:
+            // si ese ID ya tiene dueño o el módulo no vuelve a contestar filtrando por su ID, no es de acá.
+            if (idResp in idsDeRespuesta || !confirmar(id, idResp)) {
+                log.nota("Descartado: %03X contestó en %03X pero no se confirmó".format(id, idResp))
+                return@forEachIndexed
+            }
             idsDeRespuesta += idResp
             log.nota("Módulo encontrado: %03X responde en %03X".format(id, idResp))
             val previo = conocidos.firstOrNull { it.idPedido == id && it.idRespuesta == idResp }
@@ -201,6 +216,16 @@ class Descubridor(private val diag: Diagnostico, private val log: FrameLog) {
         }
         progreso(candidatos.size, candidatos.size, encontrados.size)
         return encontrados
+    }
+
+    private suspend fun confirmar(id: Int, idResp: Int): Boolean {
+        for (pedido in listOf(byteArrayOf(0x3E, 0x00), byteArrayOf(0x1A, 0x87.toByte()), byteArrayOf(0x22, 0xF1.toByte(), 0x11))) {
+            when (diag.fisico(id, idResp, pedido, 300)) {
+                is DiagResultado.Positiva, is DiagResultado.Negativa -> return true
+                else -> Unit
+            }
+        }
+        return false
     }
 
     private suspend fun sondear(id: Int, esperaMs: Int): Int? {

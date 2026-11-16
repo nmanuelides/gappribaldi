@@ -389,6 +389,16 @@ private val DICCIONARIO: List<Pair<String, String>> = listOf(
     "Riesgo de daño o de seguridad. Evitá usar el auto hasta revisarlo." to "Risk of damage or safety issue. Avoid using the car until it's checked.",
     "Código propio de {}" to "{}-specific code",
     "Código propio de {} · {} significados posibles" to "{}-specific code · {} possible meanings",
+    "tipo de falla: {}" to "failure type: {}",
+    "Código propio de {} · {}" to "{}-specific code · {}",
+    "código propio de {}, sin descripción local · tipo de falla: {}" to "{}-specific code, no local description · failure type: {}",
+    "Nº de parte {}" to "Part no. {}",
+    "No tenemos el nombre del componente para este código, pero el módulo informa el tipo de falla: {}." to
+        "We don't have the component name for this code, but the module reports the failure type: {}.",
+    "Es una falla del cableado de algo que maneja el módulo. Si es una luz, lo más común es una lámpara quemada, un portalámparas sulfatado o un conector flojo; mirá qué luz no prende y empezá por ahí." to
+        "It's a wiring fault in something the module drives. If it's a light, the usual cause is a burnt bulb, a corroded bulb holder or a loose connector; check which light doesn't come on and start there.",
+    "Si cambiaste lámparas por LED, el módulo puede tomarlas como quemadas por el bajo consumo." to
+        "If you swapped bulbs for LEDs, the module may see them as burnt out because they draw so little current.",
     "SIGNIFICADOS POSIBLES SEGÚN MERCEDES" to "POSSIBLE MEANINGS ACCORDING TO MERCEDES",
     "TEXTO DE MERCEDES" to "MERCEDES TEXT",
     "¿Qué auto tenés?" to "What car do you have?",

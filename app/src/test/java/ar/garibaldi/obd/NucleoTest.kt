@@ -405,6 +405,19 @@ class ListasMercedesTest {
         assertTrue(info.titulo.contains("CAN del chasis"))
     }
 
+    /** Lo que volvió en 6FB después de borrar (sesión del 16/11/2026 18:27): 4 códigos de luces presentes. */
+    @Test
+    fun codigosDeLucesMuestranElTipoDeFalla() {
+        val dtcs = DtcDecoder.uds(hexABytes("59 02 79 96 C7 11 29 96 EB 15 29 96 CB 15 29 A8 02 15 29"))
+        assertEquals(listOf("B16C711", "B16EB15", "B16CB15", "B280215"), dtcs.map { it.codigo })
+        assertTrue(dtcs.all { it.estado.actual })
+        val abierto = repo.buscar(dtcs[1], Categoria.DESCONOCIDO, "Módulo 6FB")
+        assertEquals("Código propio de Mercedes · circuito abierto o en corto a positivo", abierto.titulo)
+        assertTrue(abierto.queRevisar.first().contains("lámpara quemada"))
+        assertEquals("Código propio de Mercedes · circuito en corto a masa",
+            repo.buscar(dtcs[0], Categoria.DESCONOCIDO, "Módulo 6FB").titulo)
+    }
+
     @Test
     fun otrasMarcasNoUsanLasListasDeMercedes() {
         try {

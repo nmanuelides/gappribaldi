@@ -95,6 +95,14 @@
       "title_en": "New in v0.11.0",
       "body_en": "• Mercedes codes with their own entries: ESP wheel and axle speed sensors, chassis CAN on the gateway, outside temperature sensor and transmission range sensor, with the source of each text (Daimler service bulletins and DAS lists).\n• When clearing: if the car refuses because the engine is running, the app tells you to turn it off and leave the ignition on.\n• After clearing, the app tells you which codes come back on their own because the fault is present right now.\n• Codes a module reports twice are shown only once.",
       "link": null
+    },
+    {
+      "id": "v0.12.0",
+      "title": "Novedades de la v0.12.0",
+      "body": "• Los códigos de Mercedes sin descripción ahora dicen el tipo de falla (circuito abierto, en corto a masa, etc.). En las luces, un circuito abierto suele ser una lámpara quemada o un conector flojo.\n• La búsqueda rápida ahora encuentra los módulos de luces y carrocería del C350.\n• La búsqueda completa ya no guarda módulos falsos por respuestas atrasadas.\n• El informe muestra el número de parte de cada módulo.",
+      "title_en": "New in v0.12.0",
+      "body_en": "• Mercedes codes with no description now show the failure type (open circuit, short to ground, etc.). On lights, an open circuit is usually a burnt bulb or a loose connector.\n• Quick search now finds the C350's lighting and body modules.\n• Full search no longer saves fake modules from late replies.\n• The report shows each module's part number.",
+      "link": null
     }
   ]
 }

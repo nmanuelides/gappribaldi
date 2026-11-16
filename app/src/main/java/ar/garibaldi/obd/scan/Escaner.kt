@@ -6,6 +6,7 @@ import ar.garibaldi.obd.dtc.DtcRepositorio
 import ar.garibaldi.obd.dtc.EstadoDtc
 import ar.garibaldi.obd.dtc.FuenteInfo
 import ar.garibaldi.obd.dtc.OrigenDtc
+import ar.garibaldi.obd.dtc.TipoFalla
 import ar.garibaldi.obd.modules.Categoria
 import ar.garibaldi.obd.modules.Modulo
 import ar.garibaldi.obd.obd.Obd2
@@ -81,7 +82,8 @@ class Escaner(private val diag: Diagnostico, private val obd: Obd2) {
             if (lectura.protocolo != null && lectura.protocolo != m.protocolo) protocoloDetectado(m, lectura.protocolo)
             resultados += ResultadoModulo(
                 "mod-%03X".format(m.idPedido), m.nombre, m.categoria,
-                "Dirección ${m.direccion} · ${(lectura.protocolo ?: m.protocolo)?.name ?: "protocolo sin detectar"}",
+                "Dirección ${m.direccion} · ${(lectura.protocolo ?: m.protocolo)?.name ?: "protocolo sin detectar"}" +
+                    (m.numeroDeParte()?.let { " · Nº de parte $it" } ?: ""),
                 lectura.dtcs, lectura.error,
             )
         }
@@ -187,7 +189,9 @@ object Informe {
             for (d in m.dtcs) {
                 val info = repo.buscar(d, m.categoria, m.nombre)
                 val titulo = when {
-                    info.fuente == FuenteInfo.NINGUNA -> "código propio de ${Auto.marcaCorta}, sin descripción local"
+                    info.fuente == FuenteInfo.NINGUNA -> TipoFalla.texto(d.tipoFalla)
+                        ?.let { "código propio de ${Auto.marcaCorta}, sin descripción local · tipo de falla: $it" }
+                        ?: "código propio de ${Auto.marcaCorta}, sin descripción local"
                     else -> titulos[d.codigo] ?: info.titulo
                 }
                 sb.appendLine("  ${d.codigo} — $titulo")

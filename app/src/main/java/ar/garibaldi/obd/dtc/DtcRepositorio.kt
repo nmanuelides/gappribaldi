@@ -225,10 +225,19 @@ class DtcRepositorio(private val abrir: (String) -> InputStream?) {
             }
             if (generica != null) return deObdex(clave, generica, categoria)
         }
+        // Sin descripción: el último byte de un código UDS igual dice qué tipo de falla es (norma SAE)
+        val tipo = TipoFalla.texto(dtc.tipoFalla)
+        val revisar = if (TipoFalla.esDeCircuito(dtc.tipoFalla) && dtc.codigo.startsWith("B")) listOf(
+            "Es una falla del cableado de algo que maneja el módulo. Si es una luz, lo más común es una lámpara quemada, " +
+                "un portalámparas sulfatado o un conector flojo; mirá qué luz no prende y empezá por ahí.",
+            "Si cambiaste lámparas por LED, el módulo puede tomarlas como quemadas por el bajo consumo.",
+        ) else emptyList()
         return InfoDtc(
-            titulo = "Código propio de ${Auto.marcaCorta}",
-            explicacion = null,
-            causas = emptyList(), sintomas = emptyList(), queRevisar = emptyList(),
+            titulo = if (tipo != null) "Código propio de ${Auto.marcaCorta} · $tipo" else "Código propio de ${Auto.marcaCorta}",
+            explicacion = tipo?.let {
+                "No tenemos el nombre del componente para este código, pero el módulo informa el tipo de falla: $it."
+            },
+            causas = emptyList(), sintomas = emptyList(), queRevisar = revisar,
             gravedad = if (categoria.seguridad) Gravedad.AMARILLO else Gravedad.VERDE,
             gravedadEstimada = true,
             notaMotor = null, relacionados = emptyList(),
