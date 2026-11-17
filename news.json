@@ -119,6 +119,14 @@
       "title_en": "New in v0.14.0",
       "body_en": "• Light test: modules with body codes get a button that reads that module every 1.5 seconds. Unplug or change a bulb and that light's code gets highlighted by itself.\n• You can name each code after its light (\"rear left indicator\"); the name is saved and shows on every scan and in the report.\n• From the test you can clear the module's codes and see which come back: those are the lights still failing.",
       "link": null
+    },
+    {
+      "id": "v0.15.0",
+      "title": "Novedades de la v0.15.0",
+      "body": "• Los módulos se reconocen por su número de parte: en el C350 ahora aparecen SAM delantero (N10/1), SAM trasero (N10/2), llave y arranque (EZS), frenos/ABS/ESP, tablero de instrumentos y faros de xenón, en vez de \"Módulo 6F3\".\n• El nombre de cada luz se guarda por la luz y no por el código entero: B16C711 y B16C715 son la misma luz con otro tipo de falla, así que comparten el nombre.\n• En la prueba de luces, si aparece un código de la misma luz que otro, se avisa con \"Misma luz que…\".",
+      "title_en": "New in v0.15.0",
+      "body_en": "• Modules are recognized by their part number: on the C350 they now show as front SAM (N10/1), rear SAM (N10/2), key and ignition (EZS), brakes/ABS/ESP, instrument cluster and xenon headlights, instead of \"Module 6F3\".\n• Each light's name is saved per light rather than per full code: B16C711 and B16C715 are the same light with a different failure type, so they share the name.\n• In the light test, a code for the same light as another one is flagged with \"Same light as…\".",
+      "link": null
     }
   ]
 }

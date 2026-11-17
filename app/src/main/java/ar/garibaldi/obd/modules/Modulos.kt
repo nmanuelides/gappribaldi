@@ -42,7 +42,13 @@ data class Modulo(
      * de diagnóstico F19E, p. ej. "SAM204"), lo usa. Nunca pisa un nombre que eligió el usuario.
      */
     fun conNombreDeIdentificacion(): Modulo {
-        if (nombreConfirmado || categoria != Categoria.DESCONOCIDO) return this
+        if (nombreConfirmado) return this
+        // El número de parte identifica el módulo mejor que la dirección: pisa los nombres "probable"
+        val generico = categoria == Categoria.DESCONOCIDO || nombre.endsWith("(probable)")
+        if (generico) NumerosDeParte.buscar(numeroDeParte())?.let { (n, c) ->
+            return if (n == nombre && c == categoria) this else copy(nombre = n, categoria = c)
+        }
+        if (categoria != Categoria.DESCONOCIDO) return this
         val texto = identificacion.entries.firstOrNull { "F1 97" in it.key || "F1 9E" in it.key }?.value
             ?.substringBefore("[")?.trim()?.takeIf { t -> t.count { it.isLetter() } >= 3 } ?: return this
         return copy(nombre = "%s (%03X)".format(texto, idPedido))
@@ -51,6 +57,32 @@ data class Modulo(
     /** Número de parte leído en la identificación (10 dígitos en Mercedes), para el informe. */
     fun numeroDeParte(): String? = identificacion.values.firstNotNullOfOrNull {
         Regex("(?<![0-9A-F])[A-Z]?[0-9]{10}(?![0-9])").find(it.substringBefore("[").trim())?.value
+    }
+}
+
+/**
+ * Números de parte de Mercedes (los 10 dígitos que el módulo informa en su identificación) que
+ * sabemos a qué módulo corresponden. Salen de lo que contestó el C350 y de avisos de repuestos
+ * del W204 con ese mismo número; los que no están del todo confirmados dicen "probable".
+ */
+object NumerosDeParte {
+    private val exactos = mapOf(
+        "2045456701" to ("SAM delantero (N10/1)" to Categoria.CARROCERIA),
+        "2045458732" to ("SAM trasero (N10/2)" to Categoria.CARROCERIA),
+        "2045451308" to ("Llave y arranque (EZS)" to Categoria.ARRANQUE),
+        "2045455432" to ("Frenos / ABS / ESP" to Categoria.FRENOS),
+        "2048205626" to ("Faros de xenón (probable)" to Categoria.CARROCERIA),
+    )
+
+    // Grupo de la pieza (dígitos 4 a 6) que alcanza para saber qué es
+    private val grupos = mapOf(
+        "440" to ("Tablero de instrumentos (probable)" to Categoria.TABLERO),
+    )
+
+    fun buscar(numero: String?): Pair<String, Categoria>? {
+        val n = numero?.trimStart('A') ?: return null
+        if (n.length != 10) return null
+        return exactos[n] ?: grupos[n.substring(3, 6)]
     }
 }
 
@@ -160,7 +192,7 @@ class AlmacenModulos(carpeta: File, nombre: String = "modulos.json") {
                 protocolo = o.optString("proto").takeIf { it.isNotEmpty() }?.let { runCatching { Protocolo.valueOf(it) }.getOrNull() },
                 identificacion = ident,
                 nombreConfirmado = o.optBoolean("confirmado"),
-            )
+            ).conNombreDeIdentificacion() // los guardados antes de conocer su número de parte se nombran al cargar
         }
     } catch (_: Exception) {
         emptyList()

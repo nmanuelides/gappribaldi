@@ -84,6 +84,9 @@ fun PantallaPruebaLuces(vm: AppViewModel) {
                     if (nombre != null) Text("Luz: $nombre", style = MaterialTheme.typography.bodyMedium, color = marca.claro)
                     else Suave("Tocá para ponerle nombre")
                     TipoFalla.texto(c.dtc.tipoFalla)?.let { Suave("Tipo de falla: $it") }
+                    // Mismo comienzo, otra terminación: es la misma luz con otro tipo de falla
+                    p.codigos.map { it.dtc.codigo }.filter { it != codigo && baseDeLuz(it) == baseDeLuz(codigo) }
+                        .takeIf { it.isNotEmpty() }?.let { Text("Misma luz que ${it.joinToString()}", style = MaterialTheme.typography.bodySmall, color = marca.claro) }
                     Text(
                         if (c.presente) "Presente ahora: esa luz está fallando" else "No está fallando ahora",
                         style = MaterialTheme.typography.bodySmall,

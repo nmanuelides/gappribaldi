@@ -673,7 +673,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     // Nombres que el usuario le pone a cada código de luz ("giro trasero izquierdo"), por marca y módulo
     private val nombresLuces = mutableStateMapOf<String, String>()
 
-    private fun claveLuz(idPedido: Int, codigo: String) = "${marca.nombre}|%03X|%s".format(idPedido, codigo)
+    // Va por la luz (B16C7), no por el código entero: B16C711 y B16C715 son la misma luz con otra falla
+    private fun claveLuz(idPedido: Int, codigo: String) = "${marca.nombre}|%03X|%s".format(idPedido, baseDeLuz(codigo))
 
     fun nombreLuz(idPedido: Int, codigo: String): String? = nombresLuces[claveLuz(idPedido, codigo)]
 
@@ -687,7 +688,8 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun cargarNombresLuces() {
         val o = runCatching { org.json.JSONObject(prefs.getString("nombresLuces", "{}") ?: "{}") }.getOrNull() ?: return
-        o.keys().forEach { k -> nombresLuces[k] = o.optString(k) }
+        // Los de la v0.14 se guardaban con el código entero: se pasan a la luz
+        o.keys().forEach { k -> nombresLuces[k.substringBeforeLast('|') + "|" + baseDeLuz(k.substringAfterLast('|'))] = o.optString(k) }
     }
 
     // ── Traducción y explicación con IA ──────────────────────────────────────
@@ -888,6 +890,9 @@ sealed interface EstadoActualizacion {
 /** Archivo del mapa de módulos de cada marca. */
 private fun archivoModulos(m: Marca): String =
     if (m.nombre == Auto.MERCEDES) "modulos.json" else "modulos-" + m.nombre.lowercase().replace(Regex("[^a-z0-9]"), "") + ".json"
+
+/** Parte del código que identifica la luz: en los códigos UDS (B16C711) son las 5 primeras letras; el resto es el tipo de falla. */
+internal fun baseDeLuz(codigo: String): String = if (codigo.length == 7) codigo.take(5) else codigo
 
 /** Junta una lectura nueva con lo que ya se vio en la prueba de luces y marca qué cambió y cuándo. */
 internal fun combinarPrueba(previo: AppViewModel.EstadoPrueba, leidos: List<Dtc>, ahora: Long): List<AppViewModel.CodigoPrueba> {

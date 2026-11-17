@@ -439,6 +439,23 @@ class ListasMercedesTest {
     }
 
     @Test
+    fun modulosSeNombranPorNumeroDeParte() {
+        fun mod(nombre: String, cat: Categoria, parte: String) = ar.garibaldi.obd.modules.Modulo(
+            0x6FB, 0x4DF, nombre, cat, identificacion = mapOf("Hardware (F1 11)" to parte),
+        ).conNombreDeIdentificacion()
+        assertEquals("SAM trasero (N10/2)", mod("Módulo 6FB", Categoria.DESCONOCIDO, "2045458732").nombre)
+        assertEquals(Categoria.CARROCERIA, mod("Módulo 6F3", Categoria.DESCONOCIDO, "2045456701").categoria)
+        assertEquals("Llave y arranque (EZS)", mod("Llave y arranque (EZS) (probable)", Categoria.ARRANQUE, "2045451308").nombre)
+        assertEquals("Tablero de instrumentos (probable)", mod("Módulo 622", Categoria.DESCONOCIDO, "2044400401").nombre)
+        // Un nombre que eligió el usuario no se toca
+        val propio = ar.garibaldi.obd.modules.Modulo(0x6FB, 0x4DF, "Mi SAM", Categoria.OTRO,
+            identificacion = mapOf("Hardware (F1 11)" to "2045458732"), nombreConfirmado = true)
+        assertEquals("Mi SAM", propio.conNombreDeIdentificacion().nombre)
+        assertEquals("B16C7", ar.garibaldi.obd.ui.baseDeLuz("B16C711"))
+        assertEquals(ar.garibaldi.obd.ui.baseDeLuz("B16C715"), ar.garibaldi.obd.ui.baseDeLuz("B16C711"))
+    }
+
+    @Test
     fun otrasMarcasNoUsanLasListasDeMercedes() {
         try {
             Auto.marca = "Toyota"
