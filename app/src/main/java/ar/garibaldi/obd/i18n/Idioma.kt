@@ -405,6 +405,42 @@ private val DICCIONARIO: List<Pair<String, String>> = listOf(
     "Código propio de {} · {}" to "{}-specific code · {}",
     "código propio de {}, sin descripción local · tipo de falla: {}" to "{}-specific code, no local description · failure type: {}",
     "Nº de parte {}" to "Part no. {}",
+    // ── Prueba de luces ──
+    "Prueba de luces" to "Light test",
+    "Prueba de luces: ver qué luz es cada código" to "Light test: find which light each code is",
+    "Luz: {}" to "Light: {}",
+    "1. Contacto puesto y la luz que querés probar prendida (giro, freno, posición, patente…)." to
+        "1. Ignition on and the light you want to test switched on (indicator, brake, side light, plate…).",
+    "2. Desenchufá esa luz si anda, o poné una lámpara buena donde había una quemada." to
+        "2. Unplug that light if it works, or fit a good bulb where a burnt one was.",
+    "3. En unos segundos el código de esa luz cambia acá y queda marcado. Tocalo para ponerle nombre." to
+        "3. Within a few seconds that light's code changes here and gets highlighted. Tap it to name it.",
+    "Leyendo el módulo…" to "Reading the module…",
+    "Leído {} veces · se vuelve a leer cada 1,5 segundos" to "Read {} times · read again every 1.5 seconds",
+    "El módulo no tiene códigos ahora." to "The module has no codes right now.",
+    "Si desenchufás una luz que anda, su código debería aparecer acá." to
+        "If you unplug a light that works, its code should show up here.",
+    "APARECIÓ" to "APPEARED",
+    "CAMBIÓ" to "CHANGED",
+    "Tocá para ponerle nombre" to "Tap to name it",
+    "Tipo de falla: {}" to "Failure type: {}",
+    "Presente ahora: esa luz está fallando" to "Present now: that light is failing",
+    "No está fallando ahora" to "Not failing now",
+    "Borrar y ver cuáles vuelven" to "Clear and see which come back",
+    "Una luz que anda deja el código guardado pero no presente. Si después de borrar un código vuelve como presente, esa luz sigue fallando." to
+        "A working light leaves its code stored but not present. If a code comes back as present after clearing, that light is still failing.",
+    "¿Qué luz es {}?" to "Which light is {}?",
+    "Ponele el nombre de la luz que desenchufaste o cambiaste. Queda guardado y se muestra en cada escaneo." to
+        "Name it after the light you unplugged or changed. It's saved and shown on every scan.",
+    "Guardar" to "Save",
+    "Nombre de la luz" to "Light name",
+    "Por ejemplo: giro trasero izquierdo, freno central, patente. Dejalo vacío para sacarle el nombre." to
+        "For example: rear left indicator, centre brake light, number plate. Leave it empty to remove the name.",
+    "Se borran los códigos de este módulo y se sigue leyendo. Los que vuelvan solos son de luces que siguen fallando; las que andan bien no vuelven." to
+        "This module's codes are cleared and reading continues. Codes that come back by themselves belong to lights that are still failing; working ones don't come back.",
+    "Se cortó la prueba de luces: {}" to "The light test stopped: {}",
+    "Todavía no se sabe qué protocolo usa este módulo: esperá una lectura." to
+        "It's not known yet which protocol this module uses: wait for one reading.",
     "No tenemos el nombre del componente para este código, pero el módulo informa el tipo de falla: {}." to
         "We don't have the component name for this code, but the module reports the failure type: {}.",
     "Es una falla del cableado de algo que maneja el módulo. Si es una luz, lo más común es una lámpara quemada, un portalámparas sulfatado o un conector flojo; mirá qué luz no prende y empezá por ahí." to

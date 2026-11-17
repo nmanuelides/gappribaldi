@@ -419,6 +419,26 @@ class ListasMercedesTest {
     }
 
     @Test
+    fun pruebaDeLucesMarcaElCodigoQueCambia() {
+        val inicio = ar.garibaldi.obd.ui.AppViewModel.EstadoPrueba(0x6FB, "Módulo 6FB", emptyList(), 0, null, 0)
+        // Primera lectura: todo presente, nada cuenta como cambio
+        val l1 = DtcDecoder.uds(hexABytes("59 02 79 96 C7 11 29 96 EB 15 29"))
+        val c1 = ar.garibaldi.obd.ui.combinarPrueba(inicio, l1, 1000)
+        assertTrue(c1.all { it.presente && it.cambio == 0L && !it.aparecio })
+        // Se cambió la lámpara de B16EB15: queda guardado pero deja de estar presente (0x28)
+        val e1 = inicio.copy(codigos = c1, lecturas = 1)
+        val l2 = DtcDecoder.uds(hexABytes("59 02 79 96 C7 11 29 96 EB 15 28"))
+        val c2 = ar.garibaldi.obd.ui.combinarPrueba(e1, l2, 2000)
+        assertEquals(listOf(true, false), c2.map { it.presente })
+        assertEquals(listOf(0L, 2000L), c2.map { it.cambio })
+        // Se desenchufa otra luz: aparece un código nuevo
+        val l3 = DtcDecoder.uds(hexABytes("59 02 79 96 C7 11 29 96 EB 15 28 97 2B 11 29"))
+        val c3 = ar.garibaldi.obd.ui.combinarPrueba(e1.copy(codigos = c2, lecturas = 2), l3, 3000)
+        assertEquals("B172B11", c3.last().dtc.codigo)
+        assertTrue(c3.last().aparecio && c3.last().presente && c3.last().cambio == 3000L)
+    }
+
+    @Test
     fun otrasMarcasNoUsanLasListasDeMercedes() {
         try {
             Auto.marca = "Toyota"

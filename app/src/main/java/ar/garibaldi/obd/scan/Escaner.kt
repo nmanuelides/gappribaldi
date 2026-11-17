@@ -182,7 +182,12 @@ class Historial(private val carpeta: File) {
 
 /** Informe en texto plano para mandarle al mecánico o pegar en un chat. */
 object Informe {
-    fun texto(r: ResultadoEscaneo, repo: DtcRepositorio, titulos: Map<String, String> = emptyMap()): String {
+    fun texto(
+        r: ResultadoEscaneo,
+        repo: DtcRepositorio,
+        titulos: Map<String, String> = emptyMap(),
+        nombreLuz: (ResultadoModulo, Dtc) -> String? = { _, _ -> null },
+    ): String {
         val sb = StringBuilder()
         val fecha = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.US).format(Date(r.fecha))
         sb.appendLine("Diagnóstico ${Auto.descripcion} — $fecha")
@@ -205,6 +210,7 @@ object Informe {
                     else -> titulos[d.codigo] ?: info.titulo
                 }
                 sb.appendLine("  ${d.codigo} — $titulo")
+                nombreLuz(m, d)?.let { sb.appendLine("     Luz: $it") }
                 sb.appendLine("     Estado: ${d.estado.texto()} · Gravedad${if (info.gravedadEstimada) " estimada" else ""}: ${info.gravedad.titulo}")
             }
         }

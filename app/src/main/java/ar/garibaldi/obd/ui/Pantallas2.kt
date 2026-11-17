@@ -53,7 +53,7 @@ import ar.garibaldi.obd.modules.Modulo
 import ar.garibaldi.obd.obd.Obd2
 
 @Composable
-private fun Campo(valor: String, alCambiar: (String) -> Unit, etiqueta: String, secreto: Boolean = false, mayusculas: Boolean = false) {
+internal fun Campo(valor: String, alCambiar: (String) -> Unit, etiqueta: String, secreto: Boolean = false, mayusculas: Boolean = false) {
     val marca = LocalMarca.current
     OutlinedTextField(
         value = valor, onValueChange = alCambiar, singleLine = true,

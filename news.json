@@ -111,6 +111,14 @@
       "title_en": "New in v0.13.0",
       "body_en": "• Scan results show only modules with codes; the healthy ones are grouped in a separate card you can tap to open.\n• Each code shows its description right on its card, no need to open it.\n• The scan reads, once, the identification of modules that didn't have it, and uses the module's own name when it reports one.\n• After clearing light codes, the app warns they may come back within minutes if the fault is still there.",
       "link": null
+    },
+    {
+      "id": "v0.14.0",
+      "title": "Novedades de la v0.14.0",
+      "body": "• Prueba de luces: en los módulos con códigos de carrocería hay un botón que lee ese módulo cada 1,5 segundos. Desenchufás o cambiás una lámpara y el código de esa luz se marca solo.\n• A cada código le podés poner el nombre de la luz (\"giro trasero izquierdo\"); queda guardado y aparece en cada escaneo y en el informe.\n• Desde la prueba se pueden borrar los códigos del módulo y ver cuáles vuelven: esas son las luces que siguen fallando.",
+      "title_en": "New in v0.14.0",
+      "body_en": "• Light test: modules with body codes get a button that reads that module every 1.5 seconds. Unplug or change a bulb and that light's code gets highlighted by itself.\n• You can name each code after its light (\"rear left indicator\"); the name is saved and shows on every scan and in the report.\n• From the test you can clear the module's codes and see which come back: those are the lights still failing.",
+      "link": null
     }
   ]
 }

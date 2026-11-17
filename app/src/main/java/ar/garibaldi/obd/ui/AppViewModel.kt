@@ -75,6 +75,7 @@ sealed interface Pantalla {
     data object Registro : Pantalla
     data object HistorialLista : Pantalla
     data object Ajustes : Pantalla
+    data class PruebaLuces(val idPedido: Int) : Pantalla
 }
 
 sealed interface Conexion {
@@ -208,11 +209,13 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     private var tarea: Job? = null
     private var tareaVivo: Job? = null
     private var tareaTablero: Job? = null
+    private var tareaPrueba: Job? = null
 
     init {
         Idioma.ingles = prefs.getString("idioma", "es") == "en"
         sincronizarAuto()
         log.alAgregar = { versionLog++ }
+        cargarNombresLuces()
         viewModelScope.launch(Dispatchers.IO) {
             val h = historialStore.listar()
             val clave = almacenClave.leer() != null
@@ -233,6 +236,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             else -> Unit
         }
         sincronizarTablero()
+        sincronizarPrueba()
     }
 
     /** Devuelve false si ya no hay a dónde volver (la actividad se cierra). */
@@ -241,6 +245,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         if (pila.last() == Pantalla.EnVivo) detenerVivo()
         pila.removeAt(pila.lastIndex)
         sincronizarTablero()
+        sincronizarPrueba()
         return true
     }
 
@@ -285,7 +290,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun desconectar() {
-        tarea?.cancel(); detenerVivo(); detenerTablero()
+        tarea?.cancel(); detenerVivo(); detenerTablero(); detenerPrueba()
         transporte?.cerrar()
         transporte = null; elm = null; diag = null; obd = null
         trabajo = null
@@ -307,7 +312,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             return
         }
         if (trabajo != null) return
-        detenerVivo(); detenerTablero()
+        detenerVivo(); detenerTablero(); detenerPrueba()
         trabajo = Trabajo(titulo, "", null)
         tarea = viewModelScope.launch {
             try {
@@ -328,6 +333,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 trabajo = null
                 if (pantalla == Pantalla.EnVivo) iniciarVivo()
                 sincronizarTablero()
+                sincronizarPrueba()
             }
         }
     }
@@ -424,7 +430,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
         val titulos = r.modulos.flatMap { m ->
             m.dtcs.map { d -> d.codigo to tr(repo.buscar(d, m.categoria, m.nombre).titulo) }
         }.toMap()
-        Informe.texto(r, repo, titulos)
+        Informe.texto(r, repo, titulos) { m, d -> m.idPedido?.let { nombreLuz(it, d.codigo) } }
     }
 
     /** Cambia el idioma de toda la app (queda guardado) y traduce lo que haga falta del resultado abierto. */
@@ -582,6 +588,106 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             litrosViaje = a.litrosViaje + litrosHora * dt / 3600f,
             viajeSeg = segundosTablero(),
         )
+    }
+
+    // ── Prueba de luces ──────────────────────────────────────────────────────
+    /** Un código visto en la prueba. [presente]: el módulo lo marca como falla activa en la última lectura. */
+    data class CodigoPrueba(val dtc: Dtc, val presente: Boolean, val cambio: Long, val aparecio: Boolean)
+
+    /** Estado de la prueba de luces: un solo módulo leído una y otra vez para ver qué código cambia. */
+    data class EstadoPrueba(
+        val idPedido: Int,
+        val nombre: String,
+        val codigos: List<CodigoPrueba>,
+        val lecturas: Int,
+        val error: String?,
+        val ultima: Long,
+    )
+
+    var prueba by mutableStateOf<EstadoPrueba?>(null); private set
+    @Volatile private var generacionPrueba = 0
+
+    private fun sincronizarPrueba() {
+        val p = pila.last()
+        if (p is Pantalla.PruebaLuces) iniciarPrueba(p.idPedido) else detenerPrueba()
+    }
+
+    private fun iniciarPrueba(id: Int) {
+        val d = diag ?: return
+        if (tareaPrueba?.isActive == true || trabajo != null) return
+        val m = modulos.firstOrNull { it.idPedido == id } ?: return
+        if (prueba?.idPedido != id) prueba = EstadoPrueba(id, m.nombre, emptyList(), 0, null, 0)
+        tareaPrueba = viewModelScope.launch(Dispatchers.IO) {
+            try {
+                while (isActive) {
+                    val gen = generacionPrueba
+                    val l = candado.withLock { d.leerDtc(m.idPedido, m.idRespuesta, m.protocolo, m.trenMotriz) }
+                    val previo = prueba
+                    // Si se borró mientras leíamos, esta lectura es de antes del borrado: no sirve
+                    if (previo != null && previo.idPedido == id && gen == generacionPrueba) {
+                        val ahora = System.currentTimeMillis()
+                        prueba = if (l.error != null) previo.copy(error = l.error, lecturas = previo.lecturas + 1, ultima = ahora)
+                        else previo.copy(
+                            codigos = combinarPrueba(previo, l.dtcs, ahora),
+                            error = null, lecturas = previo.lecturas + 1, ultima = ahora,
+                        )
+                    }
+                    delay(1500)
+                }
+            } catch (_: CancellationException) {
+            } catch (ex: Exception) {
+                mensaje = "Se cortó la prueba de luces: ${ex.message}"
+            }
+        }
+    }
+
+    private fun detenerPrueba() {
+        tareaPrueba?.cancel()
+        tareaPrueba = null
+    }
+
+    /** Borra los códigos del módulo en prueba: los que vuelven son los de las luces que siguen mal. */
+    fun borrarEnPrueba() {
+        val d = diag ?: return
+        val p = prueba ?: return
+        val m = modulos.firstOrNull { it.idPedido == p.idPedido } ?: return
+        val proto = m.protocolo ?: run { mensaje = "Todavía no se sabe qué protocolo usa este módulo: esperá una lectura."; return }
+        viewModelScope.launch(Dispatchers.IO) {
+            val fallo = try {
+                candado.withLock { d.borrarDtc(m.idPedido, m.idRespuesta, proto) }
+            } catch (ex: CancellationException) {
+                throw ex
+            } catch (ex: Exception) {
+                ex.message ?: "Error del adaptador"
+            }
+            if (fallo != null) {
+                mensaje = fallo
+            } else {
+                generacionPrueba++
+                // Desde acá todo código que aparezca cuenta como "volvió"
+                prueba = prueba?.copy(codigos = emptyList(), lecturas = 1, error = null)
+            }
+        }
+    }
+
+    // Nombres que el usuario le pone a cada código de luz ("giro trasero izquierdo"), por marca y módulo
+    private val nombresLuces = mutableStateMapOf<String, String>()
+
+    private fun claveLuz(idPedido: Int, codigo: String) = "${marca.nombre}|%03X|%s".format(idPedido, codigo)
+
+    fun nombreLuz(idPedido: Int, codigo: String): String? = nombresLuces[claveLuz(idPedido, codigo)]
+
+    fun nombrarLuz(idPedido: Int, codigo: String, nombre: String) {
+        val clave = claveLuz(idPedido, codigo)
+        if (nombre.isBlank()) nombresLuces.remove(clave) else nombresLuces[clave] = nombre.trim()
+        val o = org.json.JSONObject()
+        nombresLuces.forEach { (k, v) -> o.put(k, v) }
+        prefs.edit().putString("nombresLuces", o.toString()).apply()
+    }
+
+    private fun cargarNombresLuces() {
+        val o = runCatching { org.json.JSONObject(prefs.getString("nombresLuces", "{}") ?: "{}") }.getOrNull() ?: return
+        o.keys().forEach { k -> nombresLuces[k] = o.optString(k) }
     }
 
     // ── Traducción y explicación con IA ──────────────────────────────────────
@@ -782,3 +888,17 @@ sealed interface EstadoActualizacion {
 /** Archivo del mapa de módulos de cada marca. */
 private fun archivoModulos(m: Marca): String =
     if (m.nombre == Auto.MERCEDES) "modulos.json" else "modulos-" + m.nombre.lowercase().replace(Regex("[^a-z0-9]"), "") + ".json"
+
+/** Junta una lectura nueva con lo que ya se vio en la prueba de luces y marca qué cambió y cuándo. */
+internal fun combinarPrueba(previo: AppViewModel.EstadoPrueba, leidos: List<Dtc>, ahora: Long): List<AppViewModel.CodigoPrueba> {
+    val primera = previo.lecturas == 0
+    val vistos = previo.codigos.map { c ->
+        val nuevo = leidos.firstOrNull { it.codigo == c.dtc.codigo }
+        val presente = nuevo?.estado?.actual == true
+        c.copy(dtc = nuevo ?: c.dtc, presente = presente, cambio = if (presente != c.presente) ahora else c.cambio)
+    }
+    val agregados = leidos.filter { d -> previo.codigos.none { it.dtc.codigo == d.codigo } }.map { d ->
+        AppViewModel.CodigoPrueba(d, d.estado.actual, if (primera) 0L else ahora, aparecio = !primera)
+    }
+    return vistos + agregados
+}

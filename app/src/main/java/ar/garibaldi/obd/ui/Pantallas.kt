@@ -532,11 +532,20 @@ private fun TarjetaModulo(vm: AppViewModel, m: ResultadoModulo, puedeBorrar: Boo
                         } else vm.tr(info.titulo),
                         style = MaterialTheme.typography.bodyMedium, color = Tinta.Texto,
                     )
+                    m.idPedido?.let { vm.nombreLuz(it, d.codigo) }?.let {
+                        Text("Luz: $it", style = MaterialTheme.typography.bodyMedium, color = LocalMarca.current.claro)
+                    }
                     resumenDtc(info)?.let { Suave(vm.tr(it)) }
                     Suave(d.estado.texto())
                 }
                 Text("›", style = MaterialTheme.typography.headlineSmall, color = Tinta.TextoSuave)
             }
+        }
+        // Módulos con códigos de carrocería (luces): la prueba en vivo dice qué luz es cada código
+        val id = m.idPedido
+        if (puedeBorrar && id != null && m.dtcs.any { it.codigo.startsWith("B") }) {
+            Spacer(Modifier.height(2.dp))
+            BotonOscuro("Prueba de luces: ver qué luz es cada código", Modifier.fillMaxWidth()) { vm.ir(Pantalla.PruebaLuces(id)) }
         }
         if (puedeBorrar && m.dtcs.isNotEmpty()) {
             Spacer(Modifier.height(2.dp))

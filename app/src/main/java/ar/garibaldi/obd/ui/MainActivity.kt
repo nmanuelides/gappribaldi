@@ -86,7 +86,7 @@ private fun App(vm: AppViewModel) {
 
     // Mientras trabaja con el auto o muestra datos en vivo, que no se apague la pantalla
     val vista = LocalView.current
-    val mantener = vm.trabajo != null || pantalla == Pantalla.EnVivo
+    val mantener = vm.trabajo != null || pantalla == Pantalla.EnVivo || pantalla is Pantalla.PruebaLuces
     DisposableEffect(mantener) {
         vista.keepScreenOn = mantener
         onDispose { vista.keepScreenOn = false }
@@ -109,6 +109,7 @@ private fun App(vm: AppViewModel) {
                     Pantalla.Registro -> PantallaRegistro(vm)
                     Pantalla.HistorialLista -> PantallaHistorial(vm)
                     Pantalla.Ajustes -> PantallaAjustes(vm)
+                    is Pantalla.PruebaLuces -> PantallaPruebaLuces(vm)
                 }
             }
             vm.trabajo?.let { PanelTrabajo(it, vm::cancelarTrabajo) }
@@ -137,6 +138,7 @@ private fun BarraSuperior(vm: AppViewModel, pantalla: Pantalla) {
         Pantalla.Registro -> "Registro"
         Pantalla.HistorialLista -> "Historial"
         Pantalla.Ajustes -> "Ajustes"
+        is Pantalla.PruebaLuces -> "Prueba de luces"
     }
     Row(
         Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
