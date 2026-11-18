@@ -94,6 +94,8 @@ class SimulatedTransport(private val demoraMs: Long = 12) : ObdTransport {
         cmd.startsWith("AT") -> "OK"
         cmd.startsWith("ST") -> "?"
         cmd.all { it.isDigit() || it in 'A'..'F' } && cmd.length % 2 == 0 -> pedido(cmd)
+        // Como el ELM327: un dígito suelto al final dice cuántas respuestas esperar
+        cmd.all { it.isDigit() || it in 'A'..'F' } && cmd.length > 2 && cmd.last().isDigit() -> pedido(cmd.dropLast(1))
         else -> "?"
     }
 
@@ -220,7 +222,9 @@ class SimulatedTransport(private val demoraMs: Long = 12) : ObdTransport {
                         for (i in 0 until 32) if (pid + i + 1 in pidsMotor) bytes[i / 8] = bytes[i / 8] or (0x80 shr (i % 8))
                         listOf(0x41, pid) + bytes.toList()
                     }
-                    else -> valorPid(pid)?.let { listOf(0x41, pid) + it }
+                    // Como el auto real: un pedido puede traer varios PIDs y contesta todos los que conoce
+                    else -> req.drop(1).flatMap { p -> valorPid(p)?.let { listOf(p) + it }.orEmpty() }
+                        .takeIf { it.isNotEmpty() }?.let { listOf(0x41) + it }
                 }
             }
             0x02 -> {

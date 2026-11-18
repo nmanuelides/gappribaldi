@@ -169,9 +169,11 @@ fun PantallaTableroVivo(vm: AppViewModel, inicial: Int) {
 
     val crudo = vm.datosTablero
     val suave = spring<Float>(dampingRatio = 0.9f, stiffness = 45f)
-    val rpm by animateFloatAsState(crudo.rpm, suave, label = "rpm")
-    val vel by animateFloatAsState(crudo.velocidad, suave, label = "vel")
-    val pot by animateFloatAsState(crudo.carga ?: crudo.mariposa ?: 0f, suave, label = "pot")
+    // RPM, velocidad y potencia tienen que seguir al pie: un resorte firme llega en ~0,15 s sin saltar
+    val firme = spring<Float>(dampingRatio = 0.85f, stiffness = 500f)
+    val rpm by animateFloatAsState(crudo.rpm, firme, label = "rpm")
+    val vel by animateFloatAsState(crudo.velocidad, firme, label = "vel")
+    val pot by animateFloatAsState(crudo.carga ?: crudo.mariposa ?: 0f, firme, label = "pot")
     val agua by animateFloatAsState(crudo.refrigerante ?: 0f, suave, label = "agua")
     val nafta by animateFloatAsState(crudo.nafta ?: 0f, suave, label = "nafta")
     // El cronómetro avanza entre lecturas para que los milisegundos corran

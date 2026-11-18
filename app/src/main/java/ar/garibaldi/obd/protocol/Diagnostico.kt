@@ -74,6 +74,18 @@ class Diagnostico(private val elm: Elm327) {
     }
 
     /**
+     * Pedido OBD directo a la computadora del motor (7E0 → 7E8) para datos en vivo. El "1" al final le dice
+     * al adaptador que hay una sola respuesta: contesta apenas llega, sin esperar el tiempo máximo por si
+     * habla otro módulo (con el pedido a todos, 7DF, cada lectura tardaba ~450 ms).
+     */
+    suspend fun obdMotorRapido(pedido: ByteArray): MensajeIsoTp? {
+        SafetyGuard.verificar(pedido, false)
+        val r = elm.enviarFisico(0x7E0, 0x7E8, pedido.hex() + "1", 200)
+        val sid = pedido.u(0)
+        return IsoTp.reensamblar(r.tramas).firstOrNull { it.id == 0x7E8 && it.datos.isNotEmpty() && it.datos.u(0) == sid + 0x40 }
+    }
+
+    /**
      * Modo 04 (borrar códigos OBD) devolviendo también los rechazos: cuántos módulos lo aceptaron y los códigos
      * de rechazo (NRC) de los que no. Con el motor en marcha muchos autos contestan 7F 04 22.
      */

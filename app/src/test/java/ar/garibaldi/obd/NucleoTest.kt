@@ -191,6 +191,23 @@ class BaseDeCodigosTest {
 class FlujoCompletoTest {
     private val repo = DtcRepositorio { nombre -> File("src/main/assets/dtc", nombre).takeIf { it.exists() }?.inputStream() }
 
+    @Test fun tableroLeeRpmYVelocidadEnUnSoloPedidoDirecto() = runBlocking {
+        val log = FrameLog()
+        val transporte = SimulatedTransport(demoraMs = 0)
+        transporte.conectar()
+        val elm = Elm327(transporte, log)
+        elm.inicializar()
+        val obd = Obd2(Diagnostico(elm))
+        val rpm = Pids.porId(0x0C)!!
+        val vel = Pids.porId(0x0D)!!
+        assertNotNull(obd.leerPid(rpm))
+        assertEquals(true, obd.rapido)
+        val ambos = obd.leerPidsRapido(listOf(rpm, vel))
+        assertEquals(setOf(0x0C, 0x0D), ambos?.keys)
+        // Va directo al motor (7E0) y con el "1" que corta la espera apenas contesta
+        assertTrue("TX 010C0D1" in log.texto())
+    }
+
     @Test fun descubreLeeYBorra() = runBlocking {
         val log = FrameLog()
         val transporte = SimulatedTransport(demoraMs = 0)
@@ -252,7 +269,8 @@ class FlujoCompletoTest {
         val enviados = log.copia().filter { " TX " in it }.map { it.substringAfter(" TX ") }
             .filter { !it.startsWith("AT") && !it.startsWith("ST") }
         assertTrue(enviados.isNotEmpty())
-        for (h in enviados) assertTrue(h, SafetyGuard.permitido(hexABytes(h), borradoConfirmado = true))
+        // Un dígito suelto al final es la cantidad de respuestas que se esperan (no sale al auto)
+        for (h in enviados) assertTrue(h, SafetyGuard.permitido(hexABytes(if (h.length % 2 == 1) h.dropLast(1) else h), borradoConfirmado = true))
     }
 }
 

@@ -137,10 +137,38 @@ class Obd2(private val diag: Diagnostico) {
         return soportados
     }
 
+    /** Si el motor contesta los pedidos directos y rápidos (null = todavía no se probó). */
+    var rapido: Boolean? = null
+        private set
+
     suspend fun leerPid(pid: Pid): Double? {
+        if (rapido != false) {
+            val v = leerPidsRapido(listOf(pid))?.get(pid.pid)
+            if (v != null) { rapido = true; return v }
+            if (rapido == true) return null
+            rapido = false // nunca funcionó: este auto va por el pedido a todos los módulos
+        }
         val m = diag.obd(byteArrayOf(0x01, pid.pid.toByte()), 150)
             .firstOrNull { it.datos.size >= 2 + pid.bytes && it.datos.u(1) == pid.pid } ?: return null
         return pid.calc(IntArray(pid.bytes) { m.datos.u(2 + it) })
+    }
+
+    /**
+     * Varios PIDs del motor en un solo pedido rápido (hasta que la respuesta entra en una trama: 6 bytes).
+     * Devuelve null si el auto no contesta así; entonces se usa [leerPid] de a uno.
+     */
+    suspend fun leerPidsRapido(pids: List<Pid>): Map<Int, Double>? {
+        if (pids.isEmpty()) return emptyMap()
+        val m = diag.obdMotorRapido(byteArrayOf(0x01) + pids.map { it.pid.toByte() }) ?: return null
+        val r = HashMap<Int, Double>()
+        var i = 1
+        while (i < m.datos.size) {
+            val pid = pids.firstOrNull { it.pid == m.datos.u(i) } ?: break
+            if (i + pid.bytes >= m.datos.size) break
+            r[pid.pid] = pid.calc(IntArray(pid.bytes) { m.datos.u(i + 1 + it) })
+            i += 1 + pid.bytes
+        }
+        return r.takeIf { it.isNotEmpty() }
     }
 
     /** Modo 02: las condiciones del motor en el momento en que se guardó la falla principal. */

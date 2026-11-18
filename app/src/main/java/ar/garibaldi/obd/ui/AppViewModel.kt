@@ -544,16 +544,21 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
                 )
                 var i = 0
                 var ultimo = System.nanoTime()
-                var vuelta = 0
+                var ultimoTestigo = 0L
                 while (isActive) {
                     val leidos = HashMap<Int, Double>()
-                    for (pid in rapidos) candado.withLock { o.leerPid(pid) }?.let { leidos[pid.pid] = it }
+                    // RPM y velocidad van juntas en un solo pedido directo al motor (lo más rápido posible)
+                    if (o.rapido == true) candado.withLock { o.leerPidsRapido(rapidos) }?.let { leidos.putAll(it) }
+                    for (pid in rapidos) if (pid.pid !in leidos) candado.withLock { o.leerPid(pid) }?.let { leidos[pid.pid] = it }
                     if (lentos.isNotEmpty()) {
                         val pid = lentos[i++ % lentos.size]
                         candado.withLock { o.leerPid(pid) }?.let { leidos[pid.pid] = it }
                     }
                     var mil: Boolean? = null
-                    if (vuelta++ % 40 == 0) mil = runCatching { candado.withLock { o.estado() }.any { it.testigoEncendido } }.getOrNull()
+                    if (System.nanoTime() - ultimoTestigo > 15_000_000_000L) {
+                        ultimoTestigo = System.nanoTime()
+                        mil = runCatching { candado.withLock { o.estado() }.any { it.testigoEncendido } }.getOrNull()
+                    }
                     val ahora = System.nanoTime()
                     val dt = ((ahora - ultimo) / 1e9f).coerceAtMost(2f)
                     ultimo = ahora

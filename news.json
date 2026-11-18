@@ -127,6 +127,14 @@
       "title_en": "New in v0.15.0",
       "body_en": "• Modules are recognized by their part number: on the C350 they now show as front SAM (N10/1), rear SAM (N10/2), key and ignition (EZS), brakes/ABS/ESP, instrument cluster and xenon headlights, instead of \"Module 6F3\".\n• Each light's name is saved per light rather than per full code: B16C711 and B16C715 are the same light with a different failure type, so they share the name.\n• In the light test, a code for the same light as another one is flagged with \"Same light as…\".",
       "link": null
+    },
+    {
+      "id": "v0.16.0",
+      "title": "Novedades de la v0.16.0",
+      "body": "• El Dashboard responde mucho más rápido: las RPM y la velocidad se leen juntas, directo de la computadora del motor, sin esperar a los demás módulos. Antes cada lectura tardaba casi medio segundo.\n• Las agujas de RPM, velocidad y potencia siguen al motor casi al instante.\n• Datos en vivo también lee más rápido.",
+      "title_en": "New in v0.16.0",
+      "body_en": "• The Dashboard responds much faster: RPM and speed are read together, straight from the engine computer, without waiting for the other modules. Each reading used to take almost half a second.\n• The RPM, speed and power needles now follow the engine almost instantly.\n• Live data also reads faster.",
+      "link": null
     }
   ]
 }
